@@ -31,19 +31,6 @@ const server = http.createServer((req, res) => {
     return postData(req, res)
   }
 
-  /*
-   ! в постмані, в body (JSON) ввести цей об'єкт та надіслати запит
-
-    {
-        "userId": 1,
-        "id": 6,
-        "title": "New to do title",
-        "completed": false
-    }
-
-   ! після чого перевірити отримання данних методом GET (в постмані, або /json, або /todos)
-  */
-
   generate404(req, res)
 })
 
