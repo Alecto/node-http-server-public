@@ -1,3 +1,5 @@
+import fs from 'fs/promises'
+
 const createHTMLTemplate = (htmlInjection) => `
     <!DOCTYPE html>
     <html lang='en'>
@@ -20,6 +22,19 @@ const createHTMLTemplate = (htmlInjection) => `
 const rootHtmlTemplate = createHTMLTemplate('<h1>Hello from HTTP server</h1>')
 
 const notFoundTemplate = createHTMLTemplate('<h1>404 - Page not found</h1>')
+
+let formTemplate
+
+const loadFormTemplate = async () => {
+  try {
+    formTemplate = await fs.readFile('./templates/form.html')
+  } catch (err) {
+    console.error('File read error:', err)
+  }
+}
+
+loadFormTemplate().catch(console.log)
+
 
 const todos = [
   {
@@ -54,4 +69,4 @@ const todos = [
   }
 ]
 
-export { rootHtmlTemplate, notFoundTemplate, todos }
+export { rootHtmlTemplate, notFoundTemplate, formTemplate, todos }
