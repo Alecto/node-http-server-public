@@ -3,7 +3,7 @@
 */
 
 import http from 'http'
-import { generate404, generateForm, generateHTML, generateJSON, generateText, postData } from './api.mjs'
+import { generate404, generateForm, generateHTML, generateJSON, generateText, generateTodos, postData } from './api.mjs'
 
 const PORT = 3000
 
@@ -15,7 +15,7 @@ const server = http.createServer((req, res) => {
 
   if (req.method === 'GET' && req.url === '/json') return generateJSON(req, res) // GET && json
 
-  if (req.method === 'GET' && req.url === '/todos') return generateJSON(req, res) // GET && json todos
+  if (req.method === 'GET' && req.url === '/todos') return generateTodos(req, res) // GET && json todos
   if (req.method === 'POST' && req.url === '/todos') return postData(req, res) // POST && tod0
 
   if (req.method === 'GET' && req.url === '/form') return generateForm(req, res)

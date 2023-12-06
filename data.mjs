@@ -38,6 +38,8 @@ loadFormTemplate().catch(console.log)
 // end formTemplate
 
 const generateTodosTemplate = () => {
+  const headerHTML = `<h1>Todos list</h1>`
+
   // Перетворюємо кожне завдання в HTML-рядок
   const todosHTML = todos.map(todo => `
     <div>
@@ -52,7 +54,7 @@ const generateTodosTemplate = () => {
   const buttonHTML = `<button onclick="location.href='/form'" type='button'>Submit one more todo</button>`
 
   // Вставляємо HTML-рядки завдань і кнопку в шаблон сторінки
-  return createHTMLTemplate(`${todosHTML}${buttonHTML}`)
+  return createHTMLTemplate(`${headerHTML}${todosHTML}${buttonHTML}`)
 }
 
 const todos = [

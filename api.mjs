@@ -7,6 +7,13 @@ const generateHTML = (req, res) => {
   res.end(rootHtmlTemplate)
 }
 
+
+const generateTodos = (req, res) => {
+  res.statusCode = 200
+  res.setHeader('Content-Type', 'text/html')
+  res.end(generateTodosTemplate())
+}
+
 const generateForm = (req, res) => {
   if (!formTemplate) {
     res.statusCode = 500
@@ -90,4 +97,4 @@ const generate404 = (req, res) => {
   res.end(notFoundTemplate)
 }
 
-export { generateHTML, generateText, generateJSON, generate404, postData, generateForm }
+export { generateHTML, generateText, generateJSON, generate404, postData, generateForm, generateTodos }
