@@ -18,13 +18,6 @@ const generateForm = (req, res) => {
   }
 }
 
-/*
- ! Отримаємо помилку:
- Content-Type: application/x-www-form-urlencoded
- - можна побачити в Devtool -> Network -> Headers
-*/
-
-
 const generateText = (req, res) => {
   res.statusCode = 200
   res.setHeader('Content-Type', 'text/plain')
@@ -40,9 +33,19 @@ const generateJSON = (req, res) => {
 const postData = (req, res) => {
   res.setHeader('Content-Type', 'text/plain')
 
-  // ! - робота з формою не підтримується:
-  // Content-Type: application/x-www-form-urlencoded
-  // Обробляємо тільки JSON формат
+  if (req.headers['content-type'] === 'application/x-www-form-urlencoded') {
+    let body = ''
+    req.on('data', (chunk) => {
+      body += chunk.toString()
+    })
+
+    req.on('end', () => {
+      console.log(body)
+      // ! отримуємо рядок:
+      // id=99&title=New+todo+title&userId=9&completed=on
+      // який треба конвертувати в об'єкт
+    })
+  }
 
   if (req.headers['content-type'] === 'application/json') {
     let dataJSON = ''
