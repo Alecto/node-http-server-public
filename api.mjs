@@ -19,18 +19,14 @@ const generateJSON = (req, res) => {
 }
 
 const postData = (req, res) => {
-  // Створюємо змінну dataJSON для зберігання даних, що надійшли
   let dataJSON = ''
 
-  // Коли дані надходять, ми додаємо їх до змінної data
   req.on('data', (chunk) => dataJSON += chunk)
 
-  // Коли дані припиняють надходити, ми виводимо їх в консоль і відправляємо відповідь користувачу
   req.on('end', () => {
-    console.log(`Data: ${dataJSON}`)
-    // Встановлюємо код статусу відповіді як 200, що означає 'OK'
+    // Додаємо нове завдання до нашого списку завдань, перетворивши отримані дані з рядка JSON у об'єкт JavaScript
+    todos.push(JSON.parse(dataJSON))
     res.statusCode = 200
-    // Відправляємо відповідь 'To do data was received'
     res.end('Todo data was received')
   })
 }

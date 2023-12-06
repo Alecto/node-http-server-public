@@ -41,7 +41,7 @@ const server = http.createServer((req, res) => {
         "completed": false
     }
 
-   ! після чого в консолі (термінал шторма), побачимо відповідь - цей же об'єкт
+   ! після чого перевірити отримання данних методом GET (в постмані, або /json, або /todos)
   */
 
   generate404(req, res)
