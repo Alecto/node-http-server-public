@@ -22,6 +22,10 @@ const server = http.createServer((req, res) => {
     return generateJSON(req, res)
   }
 
+  if (req.url === '/todos') {
+    return generateJSON(req, res)
+  }
+
   generate404(req, res)
 })
 
