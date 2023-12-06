@@ -4,7 +4,7 @@
 */
 
 import http from 'http'
-import { generate404, generateHTML, generateJSON, generateText } from './api.mjs'
+import { generate404, generateHTML, generateJSON, generateText, postData } from './api.mjs'
 
 const PORT = 3000
 
@@ -22,11 +22,27 @@ const server = http.createServer((req, res) => {
     return generateJSON(req, res)
   }
 
+  //  GET todos
   if (req.method === 'GET' && req.url === '/todos') {
     return generateJSON(req, res)
   }
+  //  POST todos
+  if (req.method === 'POST' && req.url === '/todos') {
+    return postData(req, res)
+  }
 
-  // ! показати в постмані, що запити до POST тепер будуть вести на сторінку 404
+  /*
+   ! в постмані, в body (JSON) ввести цей об'єкт та надіслати запит
+
+    {
+        "userId": 1,
+        "id": 6,
+        "title": "New to do title",
+        "completed": false
+    }
+
+   ! після чого в консолі (термінал шторма), побачимо відповідь - цей же об'єкт
+  */
 
   generate404(req, res)
 })
