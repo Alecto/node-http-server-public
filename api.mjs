@@ -1,10 +1,29 @@
-import { notFoundTemplate, rootHtmlTemplate, todos } from './data.mjs'
+import { formTemplate, notFoundTemplate, rootHtmlTemplate, todos } from './data.mjs'
 
 const generateHTML = (req, res) => {
   res.statusCode = 200
   res.setHeader('Content-Type', 'text/html')
   res.end(rootHtmlTemplate)
 }
+
+const generateForm = (req, res) => {
+  if (!formTemplate) {
+    res.statusCode = 500
+    res.setHeader('Content-Type', 'text/plain')
+    res.end('Error: Form template not loaded')
+  } else {
+    res.statusCode = 200
+    res.setHeader('Content-Type', 'text/html')
+    res.end(formTemplate)
+  }
+}
+
+/*
+ ! Отримаємо помилку:
+ Content-Type: application/x-www-form-urlencoded
+ - можна побачити в Devtool -> Network -> Headers
+*/
+
 
 const generateText = (req, res) => {
   res.statusCode = 200
@@ -20,6 +39,10 @@ const generateJSON = (req, res) => {
 
 const postData = (req, res) => {
   res.setHeader('Content-Type', 'text/plain')
+
+  // ! - робота з формою не підтримується:
+  // Content-Type: application/x-www-form-urlencoded
+  // Обробляємо тільки JSON формат
 
   if (req.headers['content-type'] === 'application/json') {
     let dataJSON = ''
@@ -48,4 +71,4 @@ const generate404 = (req, res) => {
   res.end(notFoundTemplate)
 }
 
-export { generateHTML, generateText, generateJSON, generate404, postData }
+export { generateHTML, generateText, generateJSON, generate404, postData, generateForm }
