@@ -1,4 +1,4 @@
-import { formTemplate, notFoundTemplate, rootHtmlTemplate, todos } from './data.mjs'
+import { formTemplate, generateTodosTemplate, notFoundTemplate, rootHtmlTemplate, todos } from './data.mjs'
 import querystring from 'querystring'
 
 const generateHTML = (req, res) => {
@@ -42,19 +42,28 @@ const postData = (req, res) => {
     })
 
     req.on('end', () => {
-      let todo = querystring.parse(body)
-      todo = {
-        id: +todo['id'],
-        title: todo['title'],
-        userId: +todo['userId'],
-        completed: todo['completed'] === 'on'
-      }
-      console.log(todo)
-      // ! перетворили рядок на об'єкт, зробили нормалізацію даних
-    })
-  }
+      // Обробляємо помилку як і в JSON
+      try {
+        let todo = querystring.parse(body)
 
-  if (req.headers['content-type'] === 'application/json') {
+        todo = {
+          id: +todo['id'],
+          title: todo['title'],
+          userId: +todo['userId'],
+          completed: todo['completed'] === 'on'
+        }
+
+        todos.push(todo)
+
+        res.statusCode = 200
+        res.setHeader('content-type', 'text/html')
+        res.end(generateTodosTemplate())
+      } catch (err) {
+        res.statusCode = 400
+        res.end('Invalid form data')
+      }
+    })
+  } else if (req.headers['content-type'] === 'application/json') {
     let dataJSON = ''
 
     req.on('data', (chunk) => dataJSON += chunk)

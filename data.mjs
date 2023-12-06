@@ -19,10 +19,11 @@ const createHTMLTemplate = (htmlInjection) => `
     </html>
     `
 
-const rootHtmlTemplate = createHTMLTemplate('<h1>Hello from HTTP server</h1>')
+const rootHtmlTemplate = createHTMLTemplate('<h1>Hello from HTTP server</h1><a href="/form">Form</a>&nbsp;<a href="/todos">Todos</a>')
 
 const notFoundTemplate = createHTMLTemplate('<h1>404 - Page not found</h1>')
 
+// start formTemplate
 let formTemplate
 
 const loadFormTemplate = async () => {
@@ -34,7 +35,25 @@ const loadFormTemplate = async () => {
 }
 
 loadFormTemplate().catch(console.log)
+// end formTemplate
 
+const generateTodosTemplate = () => {
+  // Перетворюємо кожне завдання в HTML-рядок
+  const todosHTML = todos.map(todo => `
+    <div>
+      <h2>${todo.title}</h2>
+      <p>User ID: ${todo.userId}</p>
+      <p>ID: ${todo.id}</p>
+      <p>Completed: ${todo.completed ? 'Yes' : 'No'}</p>
+    </div>
+  `).join('')
+
+  // Додаємо кнопку для переходу на сторінку /form
+  const buttonHTML = `<button onclick="location.href='/form'" type='button'>Submit one more todo</button>`
+
+  // Вставляємо HTML-рядки завдань і кнопку в шаблон сторінки
+  return createHTMLTemplate(`${todosHTML}${buttonHTML}`)
+}
 
 const todos = [
   {
@@ -69,4 +88,4 @@ const todos = [
   }
 ]
 
-export { rootHtmlTemplate, notFoundTemplate, formTemplate, todos }
+export { rootHtmlTemplate, notFoundTemplate, formTemplate, generateTodosTemplate, todos }
