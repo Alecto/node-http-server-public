@@ -10,21 +10,23 @@ const PORT = 3000
 
 const server = http.createServer((req, res) => {
 
-  if (req.url === '/') {
+  if (req.method === 'GET' && req.url === '/') {
     return generateHTML(req, res)
   }
 
-  if (req.url === '/text') {
+  if (req.method === 'GET' && req.url === '/text') {
     return generateText(req, res)
   }
 
-  if (req.url === '/json') {
+  if (req.method === 'GET' && req.url === '/json') {
     return generateJSON(req, res)
   }
 
-  if (req.url === '/todos') {
+  if (req.method === 'GET' && req.url === '/todos') {
     return generateJSON(req, res)
   }
+
+  // ! показати в постмані, що запити до POST тепер будуть вести на сторінку 404
 
   generate404(req, res)
 })
