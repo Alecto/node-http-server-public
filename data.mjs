@@ -1,4 +1,4 @@
-const htmlTemplate = `
+const createHTMLTemplate = (htmlInjection) => `
     <!DOCTYPE html>
     <html lang='en'>
     
@@ -10,12 +10,16 @@ const htmlTemplate = `
     
     <body style='font-family: Arial, sans-serif'>
       <div style='width: min(100% - 40px, 992px); margin-inline: auto;'>
-          <h1>Hello from HTTP server</h1>
+          ${htmlInjection}
       </div>  
     </body>
     
     </html>
     `
+
+const rootHtmlTemplate = createHTMLTemplate('<h1>Hello from HTTP server</h1>')
+
+const notFoundTemplate = createHTMLTemplate('<h1>404 - Page not found</h1>')
 
 const todos = [
   {
@@ -50,4 +54,4 @@ const todos = [
   }
 ]
 
-export { htmlTemplate, todos }
+export { rootHtmlTemplate, notFoundTemplate, todos }

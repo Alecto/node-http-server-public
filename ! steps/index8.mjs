@@ -1,6 +1,5 @@
 /*
  ? Перевіряємо шлях, за яким звертається користувач
- Після того, як код побудований, показати запити з Postman
 */
 
 import http from 'http'
@@ -28,7 +27,6 @@ const server = http.createServer((req, res) => {
     return res.end(JSON.stringify(todos))
   }
 
-  // Якщо URL запиту не відповідає жодному з вищезазначених, відправляємо відповідь 404
   res.statusCode = 404
   res.setHeader('Content-Type', 'text/html')
   return res.end(notFoundTemplate)
@@ -37,5 +35,3 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, () => {
   console.log(`The server is running on port ${PORT}`)
 })
-
-
