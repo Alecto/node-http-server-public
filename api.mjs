@@ -7,7 +7,6 @@ const generateHTML = (req, res) => {
   res.end(rootHtmlTemplate)
 }
 
-
 const generateTodos = (req, res) => {
   res.statusCode = 200
   res.setHeader('Content-Type', 'text/html')
@@ -49,7 +48,6 @@ const postData = (req, res) => {
     })
 
     req.on('end', () => {
-      // Обробляємо помилку як і в JSON
       try {
         let todo = querystring.parse(body)
 
