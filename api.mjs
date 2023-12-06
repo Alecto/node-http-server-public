@@ -1,4 +1,5 @@
 import { formTemplate, notFoundTemplate, rootHtmlTemplate, todos } from './data.mjs'
+import querystring from 'querystring'
 
 const generateHTML = (req, res) => {
   res.statusCode = 200
@@ -35,15 +36,21 @@ const postData = (req, res) => {
 
   if (req.headers['content-type'] === 'application/x-www-form-urlencoded') {
     let body = ''
+
     req.on('data', (chunk) => {
       body += chunk.toString()
     })
 
     req.on('end', () => {
-      console.log(body)
-      // ! отримуємо рядок:
-      // id=99&title=New+todo+title&userId=9&completed=on
-      // який треба конвертувати в об'єкт
+      let todo = querystring.parse(body)
+      todo = {
+        id: +todo['id'],
+        title: todo['title'],
+        userId: +todo['userId'],
+        completed: todo['completed'] === 'on'
+      }
+      console.log(todo)
+      // ! перетворили рядок на об'єкт, зробили нормалізацію даних
     })
   }
 
