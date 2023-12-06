@@ -18,10 +18,23 @@ const generateJSON = (req, res) => {
   return res.end(JSON.stringify(todos))
 }
 
+const postData = (req, res) => {
+  let dataJSON = ''
+
+  req.on('data', (chunk) => dataJSON += chunk)
+
+  req.on('end', () => {
+    // Додаємо нове завдання до нашого списку завдань, перетворивши отримані дані з рядка JSON у об'єкт JavaScript
+    todos.push(JSON.parse(dataJSON))
+    res.statusCode = 200
+    res.end('Todo data was received')
+  })
+}
+
 const generate404 = (req, res) => {
   res.statusCode = 404
   res.setHeader('Content-Type', 'text/html')
   return res.end(notFoundTemplate)
 }
 
-export { generateHTML, generateText, generateJSON, generate404 }
+export { generateHTML, generateText, generateJSON, generate404, postData }
