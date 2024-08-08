@@ -60,7 +60,7 @@ const postData = (req, res) => {
 
         todos.push(todo)
 
-        res.statusCode = 200
+        res.statusCode = 201
         res.setHeader('content-type', 'text/html')
         res.end(generateTodosTemplate())
       } catch (err) {
@@ -76,7 +76,7 @@ const postData = (req, res) => {
     req.on('end', () => {
       try {
         todos.push(JSON.parse(dataJSON))
-        res.statusCode = 200
+        res.statusCode = 201
         res.end('Todo data was received')
       } catch (err) {
         res.statusCode = 400
