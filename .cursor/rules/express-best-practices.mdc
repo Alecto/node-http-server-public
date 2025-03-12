@@ -1,0 +1,16 @@
+---
+description: Guidelines for structuring and maintaining Express.js applications
+globs: **/*.{js,mjs}
+alwaysApply: false
+---
+
+- Use middleware like `express-session` for authentication and `morgan` for logging to handle common tasks efficiently.
+- Implement error-handling middleware with four arguments (err, req, res, next) at the end of the stack for robust error management.
+- Leverage route parameters (e.g., `:id`) and query strings for flexible, dynamic routing.
+- Structure the project with separate directories:
+  - `routes/` for modular route files (e.g., `users.js`, `products.js`) imported via `app.use()`.
+  - `controllers/` for route logic implementation.
+  - `models/` for database schemas and models (e.g., Mongoose schemas).
+  - `middleware/` for custom middleware functions.
+  - `config/` for configuration files (e.g., database or environment settings).
+  - Use `app.js` or `index.js` as the main entry point.

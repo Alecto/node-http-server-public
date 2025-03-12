@@ -1,0 +1,13 @@
+---
+description: Best practices for using Pug as a template engine in Node.js applications
+globs: **/*.{js,mjs}
+alwaysApply: false
+---
+
+- Organize Pug templates in a dedicated directory (e.g., `views/`) and use subdirectories (e.g., `views/partials/`) for reusable components.
+- Use Pug’s `extends` and `block` for template inheritance to maintain a consistent layout across pages (e.g., `extends layout.pug`).
+- Leverage Pug’s `include` directive for modular partials (e.g., `include partials/header.pug`) to avoid code duplication.
+- Keep logic minimal in templates; offload complex logic to controllers or helpers (e.g., pass precomputed data via `res.render()`).
+- Use Pug’s interpolation (e.g., `#{variable}`) safely by sanitizing user input to prevent XSS attacks.
+- Configure Pug with proper indentation (e.g., 2 spaces) and enforce consistency across the team via editor settings or linters.
+- Enable Pug’s `pretty` option in development (e.g., `{ pretty: true }`) for readable HTML output, but disable it in production for performance.

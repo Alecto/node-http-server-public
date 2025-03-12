@@ -1,0 +1,14 @@
+---
+description: Best practices for using CORS in Express.js applications
+globs: **/*.{js,mjs}
+alwaysApply: false
+---
+
+- Use the `cors` middleware to enable CORS with default settings for simple use cases (e.g., `app.use(cors())`).
+- Configure specific origins using the `origin` option (e.g., `cors({ origin: 'https://example.com' })`) to restrict access to trusted domains.
+- Allow specific HTTP methods with the `methods` option (e.g., `cors({ methods: ['GET', 'POST'] })`) to limit permitted request types.
+- Expose only necessary headers using the `exposedHeaders` option (e.g., `cors({ exposedHeaders: ['X-Custom-Header'] })`) for client access.
+- Handle preflight requests by setting `optionsSuccessStatus` to 204 (e.g., `cors({ optionsSuccessStatus: 204 })`) for better compatibility.
+- Enable credentials support with `credentials: true` (e.g., `cors({ credentials: true })`) when using cookies or authentication tokens.
+- Dynamically configure CORS based on request origin using a function (e.g., `cors({ origin: (origin, callback) => callback(null, whitelist.includes(origin)) })`) for flexible security.
+- Avoid enabling CORS globally in production unless necessary; apply it to specific routes (e.g., `app.use('/api', cors())`) for better control.

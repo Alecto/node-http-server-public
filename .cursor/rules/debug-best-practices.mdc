@@ -1,0 +1,13 @@
+---
+description: Best practices for using the Debug module in Node.js applications
+globs: **/*.{js,mjs,ts}
+alwaysApply: false
+---
+
+- Enable debugging with environment variables by setting `DEBUG` (e.g., `DEBUG=app:* node app.js`) for flexible control.
+- Namespace debug instances with meaningful prefixes (e.g., `debug('app:server')`, `debug('app:db')`) to organize logs by feature or module.
+- Use `debug` only for development or diagnostic logging, avoiding it in critical production code paths.
+- Combine with other logging tools like Winston or Morgan for production logging, reserving `debug` for troubleshooting.
+- Initialize `debug` instances at the top of each module (e.g., `const debug = require('debug')('app:module')`) for consistency.
+- Disable `debug` output in production by default (e.g., unset `DEBUG` or set `DEBUG=''`) to reduce noise and improve performance.
+- Leverage sub-namespaces for granularity (e.g., `debug('app:db:query')`) to pinpoint specific operations during debugging.

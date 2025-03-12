@@ -1,0 +1,13 @@
+---
+description: Best practices for using EJS as a templating engine in Node.js applications
+globs: **/*.{js,mjs}
+alwaysApply: false
+---
+
+- Store EJS templates in a dedicated directory (e.g., `views/`) and configure Express to use it with `app.set('views', './views')`.
+- Use partials (e.g., `<%- include('header') %>`) to modularize reusable template components like headers, footers, or navigation bars.
+- Escape user input with `<%= %>` for safe rendering and prevent XSS attacks; use `<%- %>` only for trusted content.
+- Leverage EJS locals (e.g., `res.render('index', { title: 'Home' })`) to pass dynamic data to templates efficiently.
+- Minimize logic in templates: Keep EJS files focused on presentation and move complex logic to controllers or helpers.
+- Use EJS conditionals and loops (e.g., `<% if (condition) { %>`) sparingly and ensure readability with proper indentation.
+- Enable caching in production (e.g., `app.set('view cache', true)`) to improve performance, but disable it in development.

@@ -1,0 +1,10 @@
+---
+description: Best practices for using Celebrate with Joi for validation
+globs: **/*.{js,mjs}
+alwaysApply: false
+---
+
+- Create Joi schemas tailored to each endpoint’s needs for request validation (e.g., `Joi.object({ id: Joi.string().required() })`).
+- Use Celebrate's `celebrate()` middleware to validate incoming requests in Express.js routes.
+- Implement custom error handlers with `errors()` middleware to format validation errors consistently (e.g., return JSON with error details).
+- Validate specific request segments (e.g., `headers`, `params`, `query`, `body`) using Celebrate’s segment options for precise control.

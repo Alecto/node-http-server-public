@@ -1,0 +1,16 @@
+---
+description: Best practices for using Formidable for file uploads in Node.js applications
+globs: **/*.{js,mjs}
+alwaysApply: false
+---
+
+- Configure Formidable with explicit options (e.g., `uploadDir`, `maxFileSize`) in a separate config file or object for consistency across the application.
+- Validate file types using a `filter` function (e.g., check `mimetype` for allowed types like `image/*`) to prevent unwanted uploads.
+- Set reasonable limits for `maxFileSize` (e.g., 10MB) and `maxFiles` (e.g., 5) to protect server resources from abuse.
+- Store uploaded files outside the codebase (e.g., `uploads/` or cloud storage like AWS S3) and avoid using temporary OS directories for production.
+- Rename files with a unique identifier (e.g., UUID + original extension) to prevent overwriting and ensure security.
+- Handle errors explicitly using `form.on('error')` or the `parse` callback to catch parsing or upload issues gracefully.
+- Use `keepExtensions: true` to preserve file extensions, ensuring compatibility with downstream processing or display.
+- Integrate with Express.js middleware to streamline request handling, and avoid blocking the event loop with synchronous file operations.
+- Sanitize and validate accompanying form fields (e.g., using Joi) to ensure data integrity alongside file uploads.
+- Implement cleanup for failed uploads (e.g., delete temporary files) to prevent disk clutter.

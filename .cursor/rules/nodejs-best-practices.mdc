@@ -1,0 +1,12 @@
+---
+description: Best practices for Node.js server-side development
+globs: **/*.{js,ts,mjs}
+alwaysApply: false
+---
+
+- Use `async/await` for asynchronous operations (e.g., `await fs.promises.readFile()`) to improve readability and avoid callback hell.
+- Implement robust error handling with `try/catch` for async code and global handlers (e.g., `process.on('uncaughtException')`) for unhandled errors.
+- Store configuration in environment variables (e.g., via `process.env` with `dotenv`) and prefix them (e.g., `APP_PORT`) for clarity.
+- Follow the single responsibility principle by keeping modules focused (e.g., separate database logic from route handlers).
+- Utilize npm scripts for automation (e.g., `"start": "node server.js"`, `"test": "jest"`) to streamline development and deployment.
+- Import built-in Node.js modules with the `node:` prefix (e.g., `import fs from 'node:fs'`) to avoid naming conflicts and align with modern standards.
