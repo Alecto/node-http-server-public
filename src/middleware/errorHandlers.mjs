@@ -1,4 +1,5 @@
 import * as logger from '../utils/logger.mjs'
+import { HTTP_STATUS, CONTENT_TYPE } from '../config/http.mjs'
 
 // Обробник помилок на рівні HTTP запитів (middleware)
 // Використовується в маршрутизаторі для обробки помилок, що виникають під час обробки HTTP запитів
@@ -8,8 +9,8 @@ export const requestErrorHandler = (error, req, res) => {
 
   // Якщо відповідь ще не відправлена
   if (!res.headersSent) {
-    res.statusCode = 500
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+    res.statusCode = HTTP_STATUS.INTERNAL_SERVER_ERROR
+    res.setHeader('Content-Type', CONTENT_TYPE.TEXT)
     res.end('Внутрішня помилка сервера')
   }
 }
@@ -19,8 +20,8 @@ export const requestErrorHandler = (error, req, res) => {
 // Дозволяє вказати конкретне повідомлення про помилку в логах
 export const handleControllerError = (error, res, message = 'Внутрішня помилка сервера') => {
   logger.error(message, error)
-  res.statusCode = 500
-  res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+  res.statusCode = HTTP_STATUS.INTERNAL_SERVER_ERROR
+  res.setHeader('Content-Type', CONTENT_TYPE.TEXT)
   res.end('Внутрішня помилка сервера')
 }
 

@@ -4,44 +4,34 @@ import { getForm } from '../controllers/formController.mjs'
 import { requestErrorHandler } from '../middleware/errorHandlers.mjs'
 import * as logger from '../utils/logger.mjs'
 
+// Карта маршрутів для різних HTTP-методів
+const routes = {
+  GET: {
+    '/': getHomePage,
+    '/text': getTextPage,
+    '/json': getTodosJSON,
+    '/todos': getTodos,
+    '/form': getForm
+  },
+  POST: {
+    '/todos': createTodo
+  }
+}
+
 // Функція для маршрутизації запитів
 export const handleRequest = async (req, res) => {
   try {
     logger.log(`${req.method} ${req.url}`)
 
-    // Маршрутизація GET запитів
-    if (req.method === 'GET') {
-      // Головна сторінка
-      if (req.url === '/') {
-        return await getHomePage(req, res)
-      }
+    // Отримуємо базовий шлях без параметрів запиту
+    const path = req.url.split('?')[0]
 
-      // Текстова сторінка
-      if (req.url === '/text') {
-        return await getTextPage(req, res)
-      }
-
-      // JSON сторінка
-      if (req.url === '/json') {
-        return await getTodosJSON(req, res)
-      }
-
-      // Сторінка зі списком todos
-      if (req.url === '/todos') {
-        return await getTodos(req, res)
-      }
-
-      // Сторінка з формою
-      if (req.url === '/form') {
-        return await getForm(req, res)
-      }
-    }
-
-    // Маршрутизація POST запитів
-    if (req.method === 'POST') {
-      // Додавання нового todo
-      if (req.url === '/todos') {
-        return await createTodo(req, res)
+    // Перевіряємо наявність обробника для методу та шляху
+    const methodRoutes = routes[req.method]
+    if (methodRoutes) {
+      const handler = methodRoutes[path]
+      if (handler) {
+        return await handler(req, res)
       }
     }
 

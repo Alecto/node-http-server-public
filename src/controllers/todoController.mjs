@@ -4,13 +4,14 @@ import { readRequestBody } from '../utils/request.mjs'
 import { generateTodosTemplate } from '../utils/templates.mjs'
 import * as logger from '../utils/logger.mjs'
 import { handleControllerError } from '../middleware/errorHandlers.mjs'
+import { HTTP_STATUS, CONTENT_TYPE } from '../config/http.mjs'
 
 // Отримання списку todos
 export const getTodos = async (req, res) => {
   try {
     logger.log('Отримання списку todos')
-    res.statusCode = 200
-    res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    res.statusCode = HTTP_STATUS.OK
+    res.setHeader('Content-Type', CONTENT_TYPE.HTML)
     res.end(generateTodosTemplate(todos))
   } catch (error) {
     handleControllerError(error, res, 'Помилка при отриманні списку todos')
@@ -21,8 +22,8 @@ export const getTodos = async (req, res) => {
 export const getTodosJSON = async (req, res) => {
   try {
     logger.log('Отримання списку todos у форматі JSON')
-    res.statusCode = 200
-    res.setHeader('Content-Type', 'application/json; charset=utf-8')
+    res.statusCode = HTTP_STATUS.OK
+    res.setHeader('Content-Type', CONTENT_TYPE.JSON)
     res.end(JSON.stringify(todos))
   } catch (error) {
     handleControllerError(error, res, 'Помилка при отриманні списку todos у форматі JSON')
@@ -33,9 +34,9 @@ export const getTodosJSON = async (req, res) => {
 export const createTodo = async (req, res) => {
   try {
     logger.log('Додавання нового todo')
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+    res.setHeader('Content-Type', CONTENT_TYPE.TEXT)
 
-    if (req.headers['content-type'] === 'application/x-www-form-urlencoded') {
+    if (req.headers['content-type'] === CONTENT_TYPE.FORM) {
       const body = await readRequestBody(req)
 
       try {
@@ -50,22 +51,22 @@ export const createTodo = async (req, res) => {
 
         if (!validateTodo(todo)) {
           logger.log('Невірні дані форми', todo)
-          res.statusCode = 400
+          res.statusCode = HTTP_STATUS.BAD_REQUEST
           return res.end('Невірні дані форми: перевірте всі поля')
         }
 
         addTodo(todo)
         logger.log('Todo успішно додано', todo)
 
-        res.statusCode = 201
-        res.setHeader('content-type', 'text/html; charset=utf-8')
+        res.statusCode = HTTP_STATUS.CREATED
+        res.setHeader('Content-Type', CONTENT_TYPE.HTML)
         res.end(generateTodosTemplate(todos))
       } catch (err) {
         logger.error('Помилка обробки форми', err)
-        res.statusCode = 400
+        res.statusCode = HTTP_STATUS.BAD_REQUEST
         res.end('Невірні дані форми')
       }
-    } else if (req.headers['content-type'] === 'application/json') {
+    } else if (req.headers['content-type'] === CONTENT_TYPE.JSON) {
       const dataJSON = await readRequestBody(req)
 
       try {
@@ -73,23 +74,23 @@ export const createTodo = async (req, res) => {
 
         if (!validateTodo(todo)) {
           logger.log('Невірні дані JSON', todo)
-          res.statusCode = 400
+          res.statusCode = HTTP_STATUS.BAD_REQUEST
           return res.end('Невірні дані JSON: перевірте всі поля')
         }
 
         addTodo(todo)
         logger.log('Todo успішно додано', todo)
 
-        res.statusCode = 201
+        res.statusCode = HTTP_STATUS.CREATED
         res.end('Дані todo успішно отримано')
       } catch (err) {
         logger.error('Помилка обробки JSON', err)
-        res.statusCode = 400
+        res.statusCode = HTTP_STATUS.BAD_REQUEST
         res.end('Невірний JSON')
       }
     } else {
       logger.log('Невірний Content-Type', req.headers['content-type'])
-      res.statusCode = 400
+      res.statusCode = HTTP_STATUS.BAD_REQUEST
       res.end('Дані todo повинні бути у форматі JSON або форми')
     }
   } catch (error) {
