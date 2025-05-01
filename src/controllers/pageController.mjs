@@ -1,5 +1,6 @@
 import { rootHtmlTemplate, notFoundTemplate } from '../utils/templates.mjs'
 import * as logger from '../utils/logger.mjs'
+import { handleControllerError } from '../middleware/errorHandlers.mjs'
 
 // Головна сторінка
 export const getHomePage = async (req, res) => {
@@ -9,10 +10,7 @@ export const getHomePage = async (req, res) => {
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     res.end(rootHtmlTemplate)
   } catch (error) {
-    logger.error('Помилка при відображенні головної сторінки', error)
-    res.statusCode = 500
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
-    res.end('Внутрішня помилка сервера')
+    handleControllerError(error, res, 'Помилка при відображенні головної сторінки')
   }
 }
 
@@ -24,10 +22,7 @@ export const getTextPage = async (req, res) => {
     res.setHeader('Content-Type', 'text/plain; charset=utf-8')
     res.end('Текст з HTTP сервера')
   } catch (error) {
-    logger.error('Помилка при відображенні текстової сторінки', error)
-    res.statusCode = 500
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
-    res.end('Внутрішня помилка сервера')
+    handleControllerError(error, res, 'Помилка при відображенні текстової сторінки')
   }
 }
 
@@ -39,9 +34,6 @@ export const getNotFoundPage = async (req, res) => {
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     res.end(notFoundTemplate)
   } catch (error) {
-    logger.error('Помилка при відображенні сторінки 404', error)
-    res.statusCode = 500
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
-    res.end('Внутрішня помилка сервера')
+    handleControllerError(error, res, 'Помилка при відображенні сторінки 404')
   }
-} 
+}

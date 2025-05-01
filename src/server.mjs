@@ -1,7 +1,7 @@
 import http from 'node:http'
 import { SERVER_CONFIG } from './config/index.mjs'
 import { handleRequest } from './routes/router.mjs'
-import { setupGlobalErrorHandlers } from './middleware/errorHandler.mjs'
+import { setupGlobalErrorHandlers } from './middleware/errorHandlers.mjs'
 import { initFormTemplate } from './controllers/formController.mjs'
 import * as logger from './utils/logger.mjs'
 
@@ -9,7 +9,7 @@ import * as logger from './utils/logger.mjs'
 setupGlobalErrorHandlers()
 
 // Ініціалізація шаблону форми
-initFormTemplate().catch(err => {
+initFormTemplate().catch((err) => {
   logger.error('Помилка при ініціалізації шаблону форми:', err)
 })
 
@@ -22,6 +22,8 @@ server.listen(SERVER_CONFIG.PORT, SERVER_CONFIG.HOST, () => {
 })
 
 // Обробка сигналів завершення роботи
+// Ці обробники забезпечують граційне завершення роботи сервера,
+// коли операційна система надсилає сигнали SIGTERM або SIGINT (Ctrl+C)
 process.on('SIGTERM', () => {
   logger.log('SIGTERM отримано, закриваємо сервер')
   server.close(() => {
@@ -36,4 +38,4 @@ process.on('SIGINT', () => {
     logger.log('Сервер закрито')
     process.exit(0)
   })
-}) 
+})

@@ -1,5 +1,6 @@
 import { loadFormTemplate } from '../utils/templates.mjs'
 import * as logger from '../utils/logger.mjs'
+import { handleControllerError } from '../middleware/errorHandlers.mjs'
 
 // Змінна для зберігання шаблону форми
 let formTemplate = null
@@ -14,12 +15,13 @@ export const initFormTemplate = async () => {
 export const getForm = async (req, res) => {
   try {
     logger.log('Відображення форми')
-    
-    // Якщо шаблон ще не завантажено, спробуємо завантажити
+
+    // Перша перевірка: ледаче завантаження шаблону, якщо його ще немає в пам'яті
     if (!formTemplate) {
       formTemplate = await initFormTemplate()
     }
-    
+
+    // Друга перевірка: обробка випадку, коли шаблон не вдалося завантажити
     if (!formTemplate) {
       logger.error('Шаблон форми не завантажено')
       res.statusCode = 500
@@ -31,9 +33,6 @@ export const getForm = async (req, res) => {
       res.end(formTemplate)
     }
   } catch (error) {
-    logger.error('Помилка при відображенні форми', error)
-    res.statusCode = 500
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
-    res.end('Внутрішня помилка сервера')
+    handleControllerError(error, res, 'Помилка при відображенні форми')
   }
-} 
+}
