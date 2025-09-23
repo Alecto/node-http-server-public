@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang='uk'>
+
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>404 - Не знайдено - Express HTTP Server</title>
+  <%- include('styles') %>
+</head>
+
+<body>
+  <div class='container'>
+    <%- include('navigation') %>
+
+      <h1>404 - Сторінку не знайдено</h1>
+
+      <p>Вибачте, але сторінка, яку ви шукаете, не існує.</p>
+
+      <div>
+        <a href='/' class='btn'>Повернутися на головну</a>
+        <a href='/products' class='btn'>Переглянути продукти</a>
+      </div>
+  </div>
+</body>
+
+</html>

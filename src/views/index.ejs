@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang='uk'>
+
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Головна сторінка - Express HTTP Server</title>
+  <%- include('styles') %>
+</head>
+
+<body>
+  <div class='container'>
+    <%- include('navigation') %>
+
+      <h1>Вітаємо в інтернет-магазині!</h1>
+
+      <p>Це Express.js HTTP сервер для управління каталогом продуктів з повними CRUD операціями.</p>
+
+      <h2>Можливості:</h2>
+      <ul>
+        <li>Перегляд списку продуктів</li>
+        <li>Додавання нових продуктів</li>
+        <li>Редагування існуючих продуктів</li>
+        <li>Видалення продуктів</li>
+        <li>Простий та зручний інтерфейс</li>
+      </ul>
+
+      <div>
+        <a href='/products' class='btn'>Переглянути продукти</a>
+        <a href='/products/new' class='btn btn-success'>Додати продукт</a>
+      </div>
+  </div>
+</body>
+
+</html>

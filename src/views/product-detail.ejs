@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang='uk'>
+
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Деталі продукту - Express HTTP Server</title>
+  <%- include('styles') %>
+</head>
+
+<body>
+  <div class='container'>
+    <%- include('navigation') %>
+
+      <h1>Деталі продукту</h1>
+
+      <div class='product'>
+        <h2>
+          <%= product.name %>
+        </h2>
+        <p class='price'>$<%= product.price %>
+        </p>
+        <p><strong>Опис:</strong>
+          <%= product.description %>
+        </p>
+        <p><strong>ID:</strong>
+          <%= product.id %>
+        </p>
+
+        <div class='product-actions'>
+          <a href='/products/<%= product.id %>/edit' class='btn btn-warning'>Редагувати</a>
+          <form action='/products/<%= product.id %>?_method=DELETE' method='post' style='display: inline;' onsubmit='return confirm("Ви впевнені, що хочете видалити цей продукт?")'>
+            <button type='submit' class='btn btn-danger'>Видалити</button>
+          </form>
+          <a href='/products' class='btn'>Повернутися до каталогу</a>
+        </div>
+      </div>
+  </div>
+</body>
+
+</html>

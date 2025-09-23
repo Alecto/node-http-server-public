@@ -1,43 +1,81 @@
-import { getHomePage, getTextPage, getNotFoundPage } from '../controllers/pageController.mjs'
-import { getTodos, getTodosJSON, createTodo } from '../controllers/todoController.mjs'
-import { getForm } from '../controllers/formController.mjs'
-import { requestErrorHandler } from '../middleware/errorHandlers.mjs'
+import { getHomePage } from '../controllers/pageController.mjs'
+import {
+  // HTML Web endpoints
+  getProducts,
+  getProduct,
+  getNewProductForm,
+  getEditProductForm,
+  createProduct,
+  updateProductHandler,
+  deleteProductHandler,
+  // JSON API endpoints
+  getProductsAPI,
+  getProductAPI,
+  createProductAPI,
+  updateProductAPI,
+  deleteProductAPI
+} from '../controllers/productController.mjs'
 import * as logger from '../utils/logger.mjs'
 
-// Карта маршрутів для різних HTTP-методів
-const routes = {
-  GET: {
-    '/': getHomePage,
-    '/text': getTextPage,
-    '/json': getTodosJSON,
-    '/todos': getTodos,
-    '/form': getForm
-  },
-  POST: {
-    '/todos': createTodo
-  }
-}
-
-// Функція для маршрутизації запитів
-export const handleRequest = async (req, res) => {
-  try {
+// Налаштування маршрутів для Express
+export const setupRoutes = (app) => {
+  // Логування запитів
+  app.use((req, res, next) => {
     logger.log(`${req.method} ${req.url}`)
+    next()
+  })
 
-    // Отримуємо базовий шлях без параметрів запиту
-    const path = req.url.split('?')[0]
+  // Головна сторінка
+  app.get('/', getHomePage)
 
-    // Перевіряємо наявність обробника для методу та шляху
-    const methodRoutes = routes[req.method]
-    if (methodRoutes) {
-      const handler = methodRoutes[path]
-      if (handler) {
-        return await handler(req, res)
-      }
-    }
+  // ============ JSON API ROUTES (/api) ============
+  // RESTful API з правильними HTTP методами та JSON відповідями
 
-    // Якщо маршрут не знайдено
-    await getNotFoundPage(req, res)
-  } catch (error) {
-    requestErrorHandler(error, req, res)
-  }
+  // GET /api/products - отримати всі продукти
+  app.get('/api/products', getProductsAPI)
+
+  // GET /api/products/:id - отримати продукт за ID
+  app.get('/api/products/:id', getProductAPI)
+
+  // POST /api/products - створити новий продукт
+  app.post('/api/products', createProductAPI)
+
+  // PUT /api/products/:id - оновити продукт
+  app.put('/api/products/:id', updateProductAPI)
+
+  // DELETE /api/products/:id - видалити продукт
+  app.delete('/api/products/:id', deleteProductAPI)
+
+  // ============ HTML WEB ROUTES ============
+  // Web інтерфейс з HTML сторінками
+
+  // READ - список всіх продуктів
+  app.get('/products', getProducts)
+
+  // CREATE - форма для нового продукту (повинна бути ПЕРЕД :id маршрутом)
+  app.get('/products/new', getNewProductForm)
+
+  // READ - один продукт за ID
+  app.get('/products/:id', getProduct)
+
+  // CREATE - створення нового продукту
+  app.post('/products', createProduct)
+
+  // UPDATE - форма редагування продукту
+  app.get('/products/:id/edit', getEditProductForm)
+
+  // UPDATE - оновлення продукту
+  app.put('/products/:id', updateProductHandler)
+
+  // DELETE - видалення продукту
+  app.delete('/products/:id', deleteProductHandler)
+
+  // Підтримка старих маршрутів для сумісності
+  app.get('/form', (req, res) => res.redirect('/products/new'))
+
+  // 404 middleware для всіх інших маршрутів
+  app.use((req, res) => {
+    logger.log(`Сторінку не знайдено: ${req.originalUrl}`)
+    res.status(404).render('404')
+  })
 }

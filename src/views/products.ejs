@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang='uk'>
+
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Каталог продуктів - Express HTTP Server</title>
+  <%- include('styles') %>
+</head>
+
+<body>
+  <div class='container'>
+    <%- include('navigation') %>
+
+      <h1>Каталог продуктів</h1>
+
+      <% if (products.length> 0) { %>
+        <% products.forEach(function(product) { %>
+          <div class='product'>
+            <h3>
+              <%= product.name %>
+            </h3>
+            <p class='price'>$<%= product.price %>
+            </p>
+            <p>
+              <%= product.description %>
+            </p>
+            <small>ID: <%= product.id %></small>
+            <div class='product-actions'>
+              <a href='/products/<%= product.id %>' class='btn'>Переглянути</a>
+              <a href='/products/<%= product.id %>/edit' class='btn btn-warning'>Редагувати</a>
+              <form action='/products/<%= product.id %>?_method=DELETE' method='post' style='display: inline;' onsubmit='return confirm("Ви впевнені, що хочете видалити цей продукт?")'>
+                <button type='submit' class='btn btn-danger'>Видалити</button>
+              </form>
+            </div>
+          </div>
+          <% }); %>
+
+            <p><strong>Всього продуктів:</strong>
+              <%= products.length %>
+            </p>
+            <% } else { %>
+              <p>Поки що немає продуктів в каталозі.</p>
+              <% } %>
+
+                <div>
+                  <a href='/products/new' class='btn btn-success'>Додати новий продукт</a>
+                </div>
+  </div>
+</body>
+
+</html>
