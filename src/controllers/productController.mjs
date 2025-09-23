@@ -6,7 +6,8 @@ import {
   deleteProduct,
   productExists,
   getNextId,
-  validateProduct
+  validateProduct,
+  validatePartialProduct
 } from '../models/products.mjs'
 import * as logger from '../utils/logger.mjs'
 
@@ -63,28 +64,21 @@ export const createProductAPI = (req, res) => {
   try {
     logger.log('API: Створення нового продукту')
 
-    const { id, name, price, description } = req.body
+    const { name, price, description } = req.body
 
+    // Автоматично генеруємо ID на сервері
     const product = {
-      id: Number(id),
-      name: String(name).trim(),
+      id: getNextId(),
+      name: String(name || '').trim(),
       price: Number(price),
-      description: String(description).trim()
-    }
-
-    if (productExists(product.id)) {
-      logger.log(`API: Продукт з ID ${product.id} вже існує`)
-      return res.status(409).json({
-        success: false,
-        error: `Продукт з ID ${product.id} вже існує`
-      })
+      description: String(description || '').trim()
     }
 
     if (!validateProduct(product)) {
       logger.log('API: Невірні дані продукту', product)
       return res.status(400).json({
         success: false,
-        error: 'Невірні дані продукту'
+        error: 'Невірні дані продукту: перевірте name, price та description'
       })
     }
 
@@ -112,18 +106,18 @@ export const updateProductAPI = (req, res) => {
 
     logger.log(`API: Оновлення продукту з ID ${id}`)
 
-    const updatedData = {
-      name: String(name).trim(),
-      price: Number(price),
-      description: String(description).trim()
-    }
+    // Підготовка даних для оновлення (тільки передані поля)
+    const updatedData = {}
+    if (name !== undefined) updatedData.name = String(name).trim()
+    if (price !== undefined) updatedData.price = Number(price)
+    if (description !== undefined) updatedData.description = String(description).trim()
 
-    const tempProduct = { id: Number(id), ...updatedData }
-    if (!validateProduct(tempProduct)) {
+    // Валідація часткових оновлень
+    if (!validatePartialProduct(updatedData)) {
       logger.log('API: Невірні дані для оновлення продукту', updatedData)
       return res.status(400).json({
         success: false,
-        error: 'Невірні дані продукту'
+        error: 'Невірні дані продукту: перевірте name, price та description'
       })
     }
 
@@ -253,29 +247,20 @@ export const createProduct = (req, res) => {
   try {
     logger.log('Створення нового продукту')
 
-    const { id, name, price, description } = req.body
+    const { name, price, description } = req.body
 
+    // Автоматично генеруємо ID на сервері
     const product = {
-      id: Number(id),
-      name: String(name).trim(),
+      id: getNextId(),
+      name: String(name || '').trim(),
       price: Number(price),
-      description: String(description).trim()
-    }
-
-    // Перевірка чи існує продукт з таким ID
-    if (productExists(product.id)) {
-      logger.log(`Продукт з ID ${product.id} вже існує`)
-      return res.status(409).render('product-form', {
-        product,
-        isEdit: false,
-        error: `Продукт з ID ${product.id} вже існує. Виберіть інший ID.`
-      })
+      description: String(description || '').trim()
     }
 
     if (!validateProduct(product)) {
       logger.log('Невірні дані продукту', product)
       return res.status(400).render('product-form', {
-        product,
+        product: { id: getNextId(), name, price, description },
         isEdit: false,
         error: 'Невірні дані продукту: перевірте всі поля'
       })

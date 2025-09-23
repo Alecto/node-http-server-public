@@ -10,6 +10,8 @@ http://localhost:3000
 
 ## 📱 JSON API Routes
 
+**Base URL for API:** `/api/`
+
 ### Authentication
 
 Немає (навчальний проект)
@@ -73,13 +75,12 @@ http://localhost:3000
 
 ### ➕ POST /api/products
 
-Створити новий продукт
+Створити новий продукт (ID генерується автоматично на сервері)
 
 **Request Body:**
 
 ```json
 {
-  "id": 6,
   "name": "New Product",
   "price": 199.99,
   "description": "Опис нового продукту"
@@ -106,16 +107,7 @@ http://localhost:3000
 ```json
 {
   "success": false,
-  "error": "Невірні дані продукту"
-}
-```
-
-**Response 409:**
-
-```json
-{
-  "success": false,
-  "error": "Продукт з ID 6 вже існує"
+  "error": "Невірні дані продукту: перевірте name, price та description"
 }
 ```
 
@@ -193,10 +185,10 @@ curl -X GET http://localhost:3000/api/products
 # Отримати продукт за ID
 curl -X GET http://localhost:3000/api/products/1
 
-# Створити новий продукт
+# Створити новий продукт (ID генерується автоматично)
 curl -X POST http://localhost:3000/api/products \
   -H "Content-Type: application/json" \
-  -d '{"id":6,"name":"Test Product","price":99.99,"description":"Test description"}'
+  -d '{"name":"Test Product","price":99.99,"description":"Test description"}'
 
 # Оновити продукт
 curl -X PUT http://localhost:3000/api/products/1 \

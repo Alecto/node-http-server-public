@@ -140,9 +140,9 @@ yarn dev
 ```bash
 # Тестування JSON API
 curl -X GET http://localhost:3000/api/products
-curl -X POST http://localhost:3000/api/products -H "Content-Type: application/json" -d '{"id":10,"name":"Test","price":99.99,"description":"Test product"}'
+curl -X POST http://localhost:3000/api/products -H "Content-Type: application/json" -d '{"name":"Test","price":99.99,"description":"Test product"}'
 curl -X PUT http://localhost:3000/api/products/1 -H "Content-Type: application/json" -d '{"name":"Updated","price":199.99,"description":"Updated product"}'
-curl -X DELETE http://localhost:3000/api/products/10
+curl -X DELETE http://localhost:3000/api/products/6
 
 # Тестування Web Interface
 # Відкрити в браузері: http://localhost:3000/products
@@ -185,16 +185,21 @@ curl -X DELETE http://localhost:3000/api/products/10
 
 ```
 node-http-server/
-├── docs/                   # Документація
+├── docs/                   # 📚 Документація
 ├── src/
-│   ├── config/            # Конфігурація
+│   ├── config/            # ⚙️ Конфігурація  
 │   ├── controllers/
 │   │   ├── pageController.mjs      # HTML сторінки
 │   │   └── productController.mjs   # CRUD для products
 │   ├── models/
 │   │   └── products.mjs           # Модель продуктів
-│   ├── routes/
-│   │   └── router.mjs             # Express маршрути
+│   ├── routes/            # 🛣️ Модульна маршрутизація
+│   │   ├── api/
+│   │   │   └── products.mjs       # JSON API роутер
+│   │   ├── web/
+│   │   │   ├── products.mjs       # Web інтерфейс роутер
+│   │   │   └── pages.mjs          # Статичні сторінки
+│   │   └── index.mjs              # Головний роутер
 │   ├── middleware/
 │   │   └── errorHandlers.mjs      # Обробка помилок
 │   ├── utils/

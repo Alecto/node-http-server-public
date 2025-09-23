@@ -50,11 +50,10 @@ curl -i -X GET http://localhost:3000/api/products/999
 #### POST Requests
 
 ```bash
-# Створити новий продукт
+# Створити новий продукт (ID генерується автоматично)
 curl -i -X POST http://localhost:3000/api/products \
   -H "Content-Type: application/json" \
   -d '{
-    "id": 10,
     "name": "Test Product",
     "price": 99.99,
     "description": "Test description"
@@ -69,14 +68,13 @@ curl -i -X POST http://localhost:3000/api/products \
     "price": -10
   }'
 
-# Дублікат ID (409)
+# Невалідні дані (400) - від'ємна ціна
 curl -i -X POST http://localhost:3000/api/products \
   -H "Content-Type: application/json" \
   -d '{
-    "id": 1,
-    "name": "Duplicate",
-    "price": 99.99,
-    "description": "Should fail"
+    "name": "Invalid Product",
+    "price": -10,
+    "description": "Negative price should fail"
   }'
 ```
 
@@ -105,8 +103,8 @@ curl -i -X PUT http://localhost:3000/api/products/999 \
 #### DELETE Requests
 
 ```bash
-# Видалити продукт
-curl -i -X DELETE http://localhost:3000/api/products/10
+# Видалити продукт (використовуйте ID з попереднього створення)
+curl -i -X DELETE http://localhost:3000/api/products/6
 
 # Неіснуючий продукт (404)
 curl -i -X DELETE http://localhost:3000/api/products/999

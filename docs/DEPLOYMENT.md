@@ -19,8 +19,28 @@ FROM node:18-alpine
 
 WORKDIR /app
 
+# Copy package files
+COPY package.json yarn.lock ./
+
+# Install dependencies
+RUN yarn install --frozen-lockfile --production
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["yarn", "start"]
+```
+
+**Alternative with npm:**
+
+```dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
 COPY package*.json ./
-RUN npm install --only=production
+RUN npm ci --only=production
 
 COPY . .
 
@@ -30,6 +50,24 @@ CMD ["npm", "start"]
 ```
 
 ### PM2 Process Manager
+
+**With Yarn:**
+
+```bash
+# Install PM2
+yarn global add pm2
+
+# Start application
+pm2 start index.mjs --name "products-api"
+
+# Monitor
+pm2 monit
+
+# Logs
+pm2 logs products-api
+```
+
+**With npm:**
 
 ```bash
 # Install PM2

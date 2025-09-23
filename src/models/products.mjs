@@ -75,9 +75,40 @@ export const getNextId = () => {
 // Функція для валідації продукту
 export const validateProduct = (product) => {
   if (!product) return false
-  if (typeof product.id !== 'number') return false
+
+  // Перевірка ID: має бути цілим числом і не NaN
+  if (!Number.isInteger(product.id) || Number.isNaN(product.id)) return false
+
+  // Перевірка name: має бути непорожнім рядком
   if (typeof product.name !== 'string' || product.name.trim() === '') return false
-  if (typeof product.price !== 'number' || product.price <= 0) return false
+
+  // Перевірка price: має бути скінченним числом більше 0
+  if (!Number.isFinite(product.price) || product.price <= 0) return false
+
+  // Перевірка description: має бути непорожнім рядком
   if (typeof product.description !== 'string' || product.description.trim() === '') return false
+
+  return true
+}
+
+// Функція для валідації часткових оновлень (для PUT запитів)
+export const validatePartialProduct = (updates) => {
+  if (!updates || typeof updates !== 'object') return false
+
+  // Якщо передано name, перевіряємо його
+  if (updates.name !== undefined) {
+    if (typeof updates.name !== 'string' || updates.name.trim() === '') return false
+  }
+
+  // Якщо передано price, перевіряємо його
+  if (updates.price !== undefined) {
+    if (!Number.isFinite(updates.price) || updates.price <= 0) return false
+  }
+
+  // Якщо передано description, перевіряємо його
+  if (updates.description !== undefined) {
+    if (typeof updates.description !== 'string' || updates.description.trim() === '') return false
+  }
+
   return true
 }

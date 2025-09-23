@@ -1,6 +1,38 @@
 import * as logger from '../utils/logger.mjs'
 import { HTTP_STATUS, CONTENT_TYPE } from '../config/http.mjs'
 
+// Express error middleware (4 параметри обов'язкові!)
+// Автоматично перехоплює помилки, що виникли в роутах або middleware
+export const expressErrorHandler = (err, req, res, next) => {
+  logger.error('Express middleware перехопив помилку:', err)
+
+  // Якщо відповідь вже відправлена, передаємо помилку стандартному обробнику Express
+  if (res.headersSent) {
+    return next(err)
+  }
+
+  // Визначаємо тип відповіді на основі Accept header або Content-Type запиту
+  const acceptsJSON = req.accepts(['html', 'json']) === 'json'
+
+  if (acceptsJSON || req.path.startsWith('/api/')) {
+    // JSON відповідь для API ендпоінтів
+    res.status(500).json({
+      success: false,
+      error: 'Внутрішня помилка сервера'
+    })
+  } else {
+    // HTML відповідь для веб-інтерфейсу
+    try {
+      res.status(500).render('500', {
+        error: 'Внутрішня помилка сервера'
+      })
+    } catch (renderError) {
+      // Якщо не вдається відрендерити шаблон помилки
+      res.status(500).send('Внутрішня помилка сервера')
+    }
+  }
+}
+
 // Обробник помилок на рівні HTTP запитів (middleware)
 // Використовується в маршрутизаторі для обробки помилок, що виникають під час обробки HTTP запитів
 // Формує HTTP відповідь з кодом 500 для клієнта

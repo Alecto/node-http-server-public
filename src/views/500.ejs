@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>500 - Внутрішня помилка сервера</title>
+  <%- include('styles.ejs') %>
+</head>
+
+<body>
+  <%- include('navigation.ejs') %>
+
+    <main class="container">
+      <div class="error-page">
+        <h1>🔧 500 - Внутрішня помилка сервера</h1>
+        <p>Вибачте, сталася помилка на сервері.</p>
+        <% if (typeof error !=='undefined' && error) { %>
+          <p class="error-message">Деталі: <%= error %>
+          </p>
+          <% } %>
+            <div class="actions">
+              <a href="/" class="btn btn-primary">Повернутися на головну</a>
+              <a href="/products" class="btn btn-secondary">Переглянути продукти</a>
+            </div>
+      </div>
+    </main>
+</body>
+
+</html>
