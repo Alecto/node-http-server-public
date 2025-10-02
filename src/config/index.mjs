@@ -8,6 +8,22 @@ const expand = (value) => {
 const fallbackLocalUri = 'mongodb://127.0.0.1:27017/'
 const fallbackDbName = 'atlas-products'
 
+const parseBoolean = (value, fallback) => {
+  if (value === undefined || value === null) return fallback
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase()
+    if (normalized === 'true') return true
+    if (normalized === 'false') return false
+  }
+
+  return Boolean(value)
+}
+
+const parseInteger = (value) => {
+  const numeric = Number(value)
+  return Number.isFinite(numeric) && numeric > 0 ? Math.floor(numeric) : undefined
+}
+
 const rawUri = expand(
   process.env.MONGODB_URI || process.env.MAIN_MONGODB_URI || process.env.MONGO_URI || process.env.DATABASE_URL || ''
 )
@@ -17,9 +33,17 @@ const rootPass = process.env.MAIN_DB_ROOT_PASS || process.env.MONGODB_PASSWORD |
 const authSource = process.env.MONGODB_AUTH_SOURCE || 'admin'
 const dbName = process.env.DB_NAME || process.env.MAIN_DB_NAME || fallbackDbName
 const shouldSeed = (process.env.DB_SEED ?? 'true').toLowerCase() === 'true'
+const nodeEnv = process.env.NODE_ENV || 'development'
+const autoIndex = parseBoolean(process.env.MONGOOSE_AUTO_INDEX, nodeEnv !== 'production')
+const maxPoolSize = parseInteger(process.env.MONGOOSE_MAX_POOL_SIZE)
+
+const parsePort = (value, fallback) => {
+  const numeric = Number(value)
+  return Number.isInteger(numeric) && numeric > 0 ? numeric : fallback
+}
 
 export const SERVER_CONFIG = {
-  PORT: Number(process.env.APP_PORT || process.env.PORT || 3000),
+  PORT: parsePort(process.env.APP_PORT || process.env.PORT, 3000),
   HOST: process.env.APP_HOST || process.env.HOST || '0.0.0.0'
 }
 
@@ -29,7 +53,9 @@ export const DATABASE_CONFIG = {
   USER: rootUser,
   PASSWORD: rootPass,
   AUTH_SOURCE: authSource,
-  SEED: shouldSeed
+  SEED: shouldSeed,
+  AUTO_INDEX: autoIndex,
+  MAX_POOL_SIZE: maxPoolSize
 }
 
 export const buildMongoConnectionString = (overrideUri, overrideDbName) => {
