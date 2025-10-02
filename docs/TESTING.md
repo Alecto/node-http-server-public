@@ -63,25 +63,16 @@ curl -i -X POST http://localhost:3000/api/products \
 curl -i -X POST http://localhost:3000/api/products \
   -H "Content-Type: application/json" \
   -d '{
-    "id": "invalid",
     "name": "",
-    "price": -10
-  }'
-
-# Невалідні дані (400) - від'ємна ціна
-curl -i -X POST http://localhost:3000/api/products \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Invalid Product",
     "price": -10,
-    "description": "Negative price should fail"
+    "description": ""
   }'
 ```
 
 #### PUT Requests
 
 ```bash
-# Оновити продукт
+# Повністю оновити продукт
 curl -i -X PUT http://localhost:3000/api/products/1 \
   -H "Content-Type: application/json" \
   -d '{
@@ -100,6 +91,22 @@ curl -i -X PUT http://localhost:3000/api/products/999 \
   }'
 ```
 
+#### PATCH Requests
+
+```bash
+# Частково оновити продукт
+curl -i -X PATCH http://localhost:3000/api/products/1 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "price": 149.99
+  }'
+
+# Невірні дані (400) - пусте тіло
+curl -i -X PATCH http://localhost:3000/api/products/1 \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
 #### DELETE Requests
 
 ```bash
@@ -116,8 +123,9 @@ curl -i -X DELETE http://localhost:3000/api/products/999
 | --------- | ------------------------ | ------- | ------------- |
 | Get All   | GET /api/products        | 200     | 500           |
 | Get One   | GET /api/products/:id    | 200     | 404, 500      |
-| Create    | POST /api/products       | 201     | 400, 409, 500 |
+| Create    | POST /api/products       | 201     | 400, 500      |
 | Update    | PUT /api/products/:id    | 200     | 400, 404, 500 |
+| Patch     | PATCH /api/products/:id  | 200     | 400, 404, 500 |
 | Delete    | DELETE /api/products/:id | 200     | 404, 500      |
 
 ## Testing Checklist
@@ -129,6 +137,7 @@ curl -i -X DELETE http://localhost:3000/api/products/999
 - [ ] Error handling works
 - [ ] JSON responses are correct
 - [ ] HTML pages render properly
+- [ ] Automated tests pass (`yarn test`)
 
 ### ✅ HTTP Compliance
 

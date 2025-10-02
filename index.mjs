@@ -2,4 +2,6 @@
  ? Головний файл для запуску сервера
 */
 
-import './src/server.mjs' 
+import { startServer } from './src/server.mjs'
+
+startServer()

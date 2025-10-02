@@ -1,13 +1,13 @@
 import {
-  products,
+  getAllProducts,
   getProductById,
   addProduct,
-  updateProduct,
+  replaceProduct,
+  patchProduct,
   deleteProduct,
   productExists,
   getNextId,
-  validateProduct,
-  validatePartialProduct
+  validateProduct
 } from '../models/products.mjs'
 import * as logger from '../utils/logger.mjs'
 
@@ -17,10 +17,11 @@ import * as logger from '../utils/logger.mjs'
 export const getProductsAPI = (req, res) => {
   try {
     logger.log('API: Отримання списку продуктів')
+    const list = getAllProducts()
     res.status(200).json({
       success: true,
-      data: products,
-      count: products.length
+      data: list,
+      count: list.length
     })
   } catch (error) {
     logger.error('API: Помилка при отриманні списку продуктів:', error)
@@ -64,22 +65,9 @@ export const createProductAPI = (req, res) => {
   try {
     logger.log('API: Створення нового продукту')
 
-    const { name, price, description } = req.body
-
-    // Автоматично генеруємо ID на сервері
     const product = {
       id: getNextId(),
-      name: String(name || '').trim(),
-      price: Number(price),
-      description: String(description || '').trim()
-    }
-
-    if (!validateProduct(product)) {
-      logger.log('API: Невірні дані продукту', product)
-      return res.status(400).json({
-        success: false,
-        error: 'Невірні дані продукту: перевірте name, price та description'
-      })
+      ...req.validatedProduct
     }
 
     addProduct(product)
@@ -102,26 +90,9 @@ export const createProductAPI = (req, res) => {
 export const updateProductAPI = (req, res) => {
   try {
     const { id } = req.params
-    const { name, price, description } = req.body
+    logger.log(`API: Часткове оновлення продукту (PATCH) з ID ${id}`)
 
-    logger.log(`API: Оновлення продукту з ID ${id}`)
-
-    // Підготовка даних для оновлення (тільки передані поля)
-    const updatedData = {}
-    if (name !== undefined) updatedData.name = String(name).trim()
-    if (price !== undefined) updatedData.price = Number(price)
-    if (description !== undefined) updatedData.description = String(description).trim()
-
-    // Валідація часткових оновлень
-    if (!validatePartialProduct(updatedData)) {
-      logger.log('API: Невірні дані для оновлення продукту', updatedData)
-      return res.status(400).json({
-        success: false,
-        error: 'Невірні дані продукту: перевірте name, price та description'
-      })
-    }
-
-    const updatedProduct = updateProduct(id, updatedData)
+    const updatedProduct = patchProduct(id, req.validatedProductUpdates)
 
     if (!updatedProduct) {
       logger.log(`API: Продукт з ID ${id} не знайдено для оновлення`)
@@ -177,13 +148,46 @@ export const deleteProductAPI = (req, res) => {
   }
 }
 
+// API: Повне оновлення продукту (PUT)
+export const replaceProductAPI = (req, res) => {
+  try {
+    const { id } = req.params
+    const newProductData = req.validatedProduct
+
+    logger.log(`API: Повна заміна продукту (PUT) з ID ${id}`)
+
+    const replacedProduct = replaceProduct(id, newProductData)
+
+    if (!replacedProduct) {
+      logger.log(`API: Продукт з ID ${id} не знайдено для заміни`)
+      return res.status(404).json({
+        success: false,
+        error: 'Продукт не знайдено'
+      })
+    }
+
+    logger.log('API: Продукт успішно оновлено (PUT)', replacedProduct)
+    res.status(200).json({
+      success: true,
+      data: replacedProduct,
+      message: 'Продукт успішно оновлено'
+    })
+  } catch (error) {
+    logger.error('API: Помилка при PUT оновленні продукту:', error)
+    res.status(500).json({
+      success: false,
+      error: 'Внутрішня помилка сервера'
+    })
+  }
+}
+
 // ============ HTML WEB ENDPOINTS ============
 
 // Отримання списку продуктів
 export const getProducts = (req, res) => {
   try {
     logger.log('Отримання списку продуктів')
-    res.render('products', { products })
+    res.render('products', { products: getAllProducts() })
   } catch (error) {
     logger.error('Помилка при отриманні списку продуктів:', error)
     res.status(500).send('Внутрішня помилка сервера')

@@ -113,7 +113,7 @@ http://localhost:3000
 
 ### ✏️ PUT /api/products/:id
 
-Оновити існуючий продукт
+Повністю замінити продукт (усі поля обов'язкові)
 
 **Request Body:**
 
@@ -135,6 +135,33 @@ http://localhost:3000
     "name": "Updated Product",
     "price": 299.99,
     "description": "Оновлений опис"
+  },
+  "message": "Продукт успішно оновлено"
+}
+```
+
+### ♻️ PATCH /api/products/:id
+
+Частково оновити продукт (оновлюються лише передані поля)
+
+**Request Body:**
+
+```json
+{
+  "price": 279.99
+}
+```
+
+**Response 200:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "name": "Laptop Pro 16",
+    "price": 279.99,
+    "description": "Високопродуктивний ноутбук для професіоналів"
   },
   "message": "Продукт успішно оновлено"
 }
@@ -190,10 +217,15 @@ curl -X POST http://localhost:3000/api/products \
   -H "Content-Type: application/json" \
   -d '{"name":"Test Product","price":99.99,"description":"Test description"}'
 
-# Оновити продукт
+# Повністю оновити продукт (PUT)
 curl -X PUT http://localhost:3000/api/products/1 \
   -H "Content-Type: application/json" \
   -d '{"name":"Updated Name","price":199.99,"description":"Updated description"}'
+
+# Частково оновити продукт (PATCH)
+curl -X PATCH http://localhost:3000/api/products/1 \
+  -H "Content-Type: application/json" \
+  -d '{"price":149.99}'
 
 # Видалити продукт
 curl -X DELETE http://localhost:3000/api/products/1

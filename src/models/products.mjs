@@ -1,40 +1,16 @@
-// Модель для products
-export const products = [
-  {
-    id: 1,
-    name: 'Laptop Pro 16',
-    price: 2599.99,
-    description: 'Високопродуктивний ноутбук для професіоналів з 16-дюймовим дисплеєм'
-  },
-  {
-    id: 2,
-    name: 'Wireless Headphones',
-    price: 299.99,
-    description: 'Бездротові навушники з активним шумозаглушенням'
-  },
-  {
-    id: 3,
-    name: 'Smart Watch',
-    price: 399.99,
-    description: "Розумний годинник з моніторингом здоров'я та фітнес-трекером"
-  },
-  {
-    id: 4,
-    name: 'Gaming Mouse',
-    price: 79.99,
-    description: 'Ігрова миша з високою точністю та RGB підсвічуванням'
-  },
-  {
-    id: 5,
-    name: 'Mechanical Keyboard',
-    price: 159.99,
-    description: 'Механічна клавіатура з тактильними перемикачами'
-  }
-]
+import { cloneInitialProducts } from '../data/products.mjs'
+
+// Внутрішній стан продуктів (інMemory сторедж)
+let products = cloneInitialProducts()
 
 // Функція для отримання продукту за ID
 export const getProductById = (id) => {
   return products.find((product) => product.id === parseInt(id))
+}
+
+// Функція для отримання всіх продуктів
+export const getAllProducts = () => {
+  return [...products]
 }
 
 // Функція для додавання нового продукту
@@ -48,6 +24,26 @@ export const updateProduct = (id, updatedProduct) => {
   const index = products.findIndex((product) => product.id === parseInt(id))
   if (index !== -1) {
     products[index] = { ...products[index], ...updatedProduct }
+    return products[index]
+  }
+  return null
+}
+
+// Функція для повної заміни продукту (PUT)
+export const replaceProduct = (id, newProductData) => {
+  const index = products.findIndex((product) => product.id === parseInt(id))
+  if (index !== -1) {
+    products[index] = { ...newProductData, id: products[index].id }
+    return products[index]
+  }
+  return null
+}
+
+// Функція для часткового оновлення продукту (PATCH)
+export const patchProduct = (id, partialProductData) => {
+  const index = products.findIndex((product) => product.id === parseInt(id))
+  if (index !== -1) {
+    products[index] = { ...products[index], ...partialProductData }
     return products[index]
   }
   return null
@@ -76,39 +72,49 @@ export const getNextId = () => {
 export const validateProduct = (product) => {
   if (!product) return false
 
-  // Перевірка ID: має бути цілим числом і не NaN
   if (!Number.isInteger(product.id) || Number.isNaN(product.id)) return false
-
-  // Перевірка name: має бути непорожнім рядком
   if (typeof product.name !== 'string' || product.name.trim() === '') return false
-
-  // Перевірка price: має бути скінченним числом більше 0
   if (!Number.isFinite(product.price) || product.price <= 0) return false
-
-  // Перевірка description: має бути непорожнім рядком
   if (typeof product.description !== 'string' || product.description.trim() === '') return false
 
   return true
 }
 
-// Функція для валідації часткових оновлень (для PUT запитів)
-export const validatePartialProduct = (updates) => {
+// Функція для валідації PATCH оновлень
+export const validatePatchProduct = (updates) => {
   if (!updates || typeof updates !== 'object') return false
 
-  // Якщо передано name, перевіряємо його
+  if (updates.name === undefined && updates.price === undefined && updates.description === undefined) {
+    return false
+  }
+
   if (updates.name !== undefined) {
     if (typeof updates.name !== 'string' || updates.name.trim() === '') return false
   }
 
-  // Якщо передано price, перевіряємо його
   if (updates.price !== undefined) {
     if (!Number.isFinite(updates.price) || updates.price <= 0) return false
   }
 
-  // Якщо передано description, перевіряємо його
   if (updates.description !== undefined) {
     if (typeof updates.description !== 'string' || updates.description.trim() === '') return false
   }
 
   return true
+}
+
+// Функція для валідації PUT оновлень (повна заміна)
+export const validatePutProduct = (product) => {
+  if (!product) return false
+
+  if (typeof product.name !== 'string' || product.name.trim() === '') return false
+  if (!Number.isFinite(product.price) || product.price <= 0) return false
+  if (typeof product.description !== 'string' || product.description.trim() === '') return false
+
+  return true
+}
+
+// Перезапуск продуктів з початковими даними (для тестів)
+export const resetProducts = () => {
+  products = cloneInitialProducts()
 }

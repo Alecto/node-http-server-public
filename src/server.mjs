@@ -13,7 +13,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 // Створення Express додатку
-const app = express()
+export const app = express()
 
 // Налаштування глобальних обробників помилок
 setupGlobalErrorHandlers()
@@ -60,23 +60,38 @@ app.use((req, res, next) => {
 app.use(expressErrorHandler)
 
 // Запуск сервера
-const server = app.listen(SERVER_CONFIG.PORT, SERVER_CONFIG.HOST, () => {
-  logger.log(`Express сервер запущено на http://${SERVER_CONFIG.HOST}:${SERVER_CONFIG.PORT}`)
-})
+let server
+
+export const startServer = (port = SERVER_CONFIG.PORT, host = SERVER_CONFIG.HOST) => {
+  server = app.listen(port, host, () => {
+    logger.log(`Express сервер запущено на http://${host}:${port}`)
+  })
+
+  return server
+}
+
+export const stopServer = () => {
+  if (server) {
+    server.close(() => {
+      logger.log('Сервер закрито')
+    })
+  }
+}
+
+// Якщо файл запускається напряму, стартуємо сервер
+if (import.meta.url === `file://${__filename}`) {
+  startServer()
+}
 
 // Обробка сигналів завершення роботи
 process.on('SIGTERM', () => {
   logger.log('SIGTERM отримано, закриваємо сервер')
-  server.close(() => {
-    logger.log('Сервер закрито')
-    process.exit(0)
-  })
+  stopServer()
+  process.exit(0)
 })
 
 process.on('SIGINT', () => {
   logger.log('SIGINT отримано, закриваємо сервер')
-  server.close(() => {
-    logger.log('Сервер закрито')
-    process.exit(0)
-  })
+  stopServer()
+  process.exit(0)
 })

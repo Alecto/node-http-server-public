@@ -24,17 +24,21 @@ node-http-server/
 │   ├── ARCHITECTURE.md    # Архітектура проекту
 │   ├── DEPLOYMENT.md      # Розгортання
 │   └── TESTING.md         # Тестування
+├── src/data/              # 📦 Початкові дані (fixtures)
+│   └── products.mjs       # Початковий список продуктів
 ├── src/                   # 💻 Код програми
 │   ├── config/            # ⚙️ Конфігурація
 │   ├── controllers/       # 🎮 Контролери (бізнес логіка)
-│   ├── middleware/        # 🔀 Middleware функції
+│   ├── middleware/        # 🛡️ Middleware і валідація
 │   ├── models/           # 📊 Моделі даних
-│   ├── routes/           # 🛣️ Маршрутизація
+│   ├── routes/           # 🛣️ Маршрутизація (api + web)
 │   ├── utils/            # 🛠️ Утиліти
 │   ├── views/            # 👁️ EJS шаблони
-│   └── server.mjs        # 🖥️ Express сервер
+│   └── server.mjs        # 🖥️ Express сервер (експортує app/start/stop)
+├── tests/                # 🧪 Автотести (node:test + supertest)
+├── .env.example          # 🔐 Приклад змінних середовища
 ├── index.mjs             # 🚪 Точка входу
-├── package.json          # 📦 Залежності
+├── package.json          # 📦 Залежності та скрипти
 └── README.md            # 📖 Основна документація
 ```
 
@@ -60,6 +64,9 @@ yarn dev
 
 # Звичайний режим
 yarn start
+
+# Запустити тести (node:test + supertest)
+yarn test
 ```
 
 Сервер буде доступний на `http://localhost:3000`
@@ -79,7 +86,8 @@ yarn start
 - `GET /api/products` - Отримати всі продукти
 - `GET /api/products/:id` - Отримати продукт за ID
 - `POST /api/products` - Створити новий продукт
-- `PUT /api/products/:id` - Оновити продукт
+- `PUT /api/products/:id` - Повністю оновити продукт
+- `PATCH /api/products/:id` - Частково оновити продукт
 - `DELETE /api/products/:id` - Видалити продукт
 
 ## 🛠️ Технології
@@ -89,7 +97,9 @@ yarn start
 - **Method Override:** method-override
 - **Body Parsing:** express.urlencoded, express.json
 - **Logging:** Custom logger
-- **Error Handling:** Global error handlers
+- **Error Handling:** Global error handlers + Express middleware
+- **Validation:** Custom middleware для API запитів
+- **Testing:** Node test runner + Supertest
 
 ## 📚 Документація
 
