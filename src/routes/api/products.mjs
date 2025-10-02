@@ -15,18 +15,13 @@ import {
 
 const router = Router()
 
-// /api/products
-router
-  .route('/')
-  .get(getProductsAPI) // GET /api/products - отримати всі продукти
-  .post(validateProductCreateRequest, createProductAPI) // POST /api/products - створити новий продукт
+router.route('/').get(getProductsAPI).post(validateProductCreateRequest, createProductAPI)
 
-// /api/products/:id
 router
   .route('/:id')
-  .get(getProductAPI) // GET /api/products/:id - отримати продукт за ID
-  .put(validateProductPutRequest, replaceProductAPI) // PUT /api/products/:id - повне оновлення продукту
-  .patch(validateProductPatchRequest, updateProductAPI) // PATCH /api/products/:id - часткове оновлення продукту
-  .delete(deleteProductAPI) // DELETE /api/products/:id - видалити продукт
+  .get(getProductAPI)
+  .put(validateProductPutRequest, replaceProductAPI)
+  .patch(validateProductPatchRequest, updateProductAPI)
+  .delete(deleteProductAPI)
 
 export default router

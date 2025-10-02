@@ -11,23 +11,12 @@ import {
 
 const router = Router()
 
-// /products - колекція продуктів
-router
-  .route('/')
-  .get(getProducts) // GET /products - список продуктів
-  .post(createProduct) // POST /products - створення продукту
+router.route('/').get(getProducts).post(createProduct)
 
-// /products/new - форма створення (має бути ПЕРЕД /:id)
-router.get('/new', getNewProductForm)
+router.route('/new').get(getNewProductForm)
 
-// /products/:id - конкретний продукт
-router
-  .route('/:id')
-  .get(getProduct) // GET /products/:id - деталі продукту
-  .put(updateProductHandler) // PUT /products/:id - оновлення продукту
-  .delete(deleteProductHandler) // DELETE /products/:id - видалення продукту
+router.route('/:id').get(getProduct).put(updateProductHandler).delete(deleteProductHandler)
 
-// /products/:id/edit - форма редагування
-router.get('/:id/edit', getEditProductForm)
+router.route('/:id/edit').get(getEditProductForm)
 
 export default router

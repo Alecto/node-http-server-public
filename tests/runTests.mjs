@@ -1,54 +1,103 @@
 import assert from 'node:assert/strict'
-import { test } from 'node:test'
+import { test, before, beforeEach, after } from 'node:test'
 import request from 'supertest'
-import { app } from '../src/server.mjs'
-import { resetProducts, getAllProducts } from '../src/models/products.mjs'
+import mongoose from 'mongoose'
+import { startServer, stopServer } from '../src/server.mjs'
+import { DATABASE_CONFIG, buildMongoConnectionString } from '../src/config/index.mjs'
+import { ProductModel } from '../src/models/products.mjs'
+import { initialProducts } from '../src/data/products.mjs'
 
-// Глобальний хук для очищення стану між тестами
-test.beforeEach(() => {
-  resetProducts()
-})
+const TEST_DB_NAME = `${DATABASE_CONFIG.NAME || 'learning-products'}-test`
+const baseConnectionString = buildMongoConnectionString()
+const TEST_DB_URI = baseConnectionString.replace(DATABASE_CONFIG.NAME, TEST_DB_NAME)
 
-test('GET /api/products повертає список продуктів', async () => {
-  const response = await request(app).get('/api/products').expect(200)
+let serverInstance
+let mongoAvailable = false
 
-  assert.equal(response.body.success, true)
-  assert.ok(Array.isArray(response.body.data))
-  assert.equal(typeof response.body.count, 'number')
-  assert.ok(response.body.data.length >= 1)
-})
-
-test('POST /api/products створює продукт', async () => {
-  const payload = {
-    name: 'Integration Product',
-    price: 123.45,
-    description: 'Created via automated test'
+const ensureMongoAvailable = async () => {
+  try {
+    const connection = await mongoose.createConnection(TEST_DB_URI).asPromise()
+    await connection.close()
+    mongoAvailable = true
+  } catch (error) {
+    mongoAvailable = false
   }
+}
 
-  const response = await request(app).post('/api/products').send(payload).expect(201)
+await ensureMongoAvailable()
 
-  assert.equal(response.body.success, true)
-  assert.equal(response.body.data.name, payload.name)
-  assert.equal(response.body.data.price, payload.price)
-  assert.equal(response.body.data.description, payload.description)
-})
+if (!mongoAvailable) {
+  console.warn('\n⚠️  MongoDB недоступна. Тести пропущено. Переконайтеся, що MongoDB Atlas або локальна БД запущені.\n')
+  test.skip('Пропуск усіх тестів, доки MongoDB недоступна', () => {})
+} else {
+  before(async () => {
+    await mongoose.connect(TEST_DB_URI)
+    serverInstance = await startServer({ connectionString: TEST_DB_URI, seed: false })
+  })
 
-test('PATCH /api/products/:id частково оновлює продукт', async () => {
-  const response = await request(app).patch('/api/products/1').send({ price: 777.77 }).expect(200)
+  beforeEach(async () => {
+    await ProductModel.deleteMany({})
+    await ProductModel.insertMany(initialProducts)
+  })
 
-  assert.equal(response.body.success, true)
-  assert.equal(response.body.data.price, 777.77)
-})
+  after(async () => {
+    await ProductModel.deleteMany({})
+    await mongoose.connection.dropDatabase()
+    await mongoose.disconnect()
+    if (serverInstance) {
+      await stopServer()
+    }
+  })
 
-test('DELETE /api/products/:id видаляє продукт', async () => {
-  const response = await request(app).delete('/api/products/1').expect(200)
+  test('GET /api/products повертає список продуктів', async () => {
+    const response = await request(serverInstance).get('/api/products').expect(200)
 
-  assert.equal(response.body.success, true)
-  assert.equal(response.body.data.id, 1)
+    assert.equal(response.body.success, true)
+    assert.ok(Array.isArray(response.body.data))
+    assert.equal(response.body.data.length, initialProducts.length)
+  })
 
-  const listAfterDelete = getAllProducts()
-  assert.equal(
-    listAfterDelete.some((product) => product.id === 1),
-    false
-  )
-})
+  test('POST /api/products створює продукт', async () => {
+    const payload = {
+      name: 'Integration Product',
+      price: 123.45,
+      description: 'Created via automated test'
+    }
+
+    const response = await request(serverInstance).post('/api/products').send(payload).expect(201)
+
+    assert.equal(response.body.success, true)
+    assert.equal(response.body.data.name, payload.name)
+
+    const productInDb = await ProductModel.findOne({ name: payload.name })
+    assert.ok(productInDb)
+  })
+
+  test('PATCH /api/products/:id частково оновлює продукт', async () => {
+    const product = await ProductModel.findOne()
+    const updatedPrice = 777.77
+
+    const response = await request(serverInstance)
+      .patch(`/api/products/${product.id}`)
+      .send({ price: updatedPrice })
+      .expect(200)
+
+    assert.equal(response.body.success, true)
+    assert.equal(response.body.data.price, updatedPrice)
+
+    const productInDb = await ProductModel.findById(product.id)
+    assert.equal(productInDb.price, updatedPrice)
+  })
+
+  test('DELETE /api/products/:id видаляє продукт', async () => {
+    const product = await ProductModel.findOne()
+
+    const response = await request(serverInstance).delete(`/api/products/${product.id}`).expect(200)
+
+    assert.equal(response.body.success, true)
+    assert.equal(response.body.data._id, product.id)
+
+    const exists = await ProductModel.exists({ _id: product.id })
+    assert.equal(Boolean(exists), false)
+  })
+}
