@@ -10,7 +10,8 @@ import {
 import {
   validateProductCreateRequest,
   validateProductPutRequest,
-  validateProductPatchRequest
+  validateProductPatchRequest,
+  validateObjectIdParam
 } from '../../middleware/validation.mjs'
 
 const router = Router()
@@ -19,6 +20,7 @@ router.route('/').get(getProductsAPI).post(validateProductCreateRequest, createP
 
 router
   .route('/:id')
+  .all(validateObjectIdParam())
   .get(getProductAPI)
   .put(validateProductPutRequest, replaceProductAPI)
   .patch(validateProductPatchRequest, updateProductAPI)

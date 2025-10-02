@@ -1,3 +1,4 @@
+import mongoose from 'mongoose'
 import { ProductModel } from '../models/products.mjs'
 
 const buildErrorResponse = (res, message) => {
@@ -80,3 +81,23 @@ export const validateProductPatchRequest = (req, res, next) => {
   req.validatedProductUpdates = payload
   next()
 }
+
+const handleInvalidObjectIdResponse = (req, res) => {
+  if (req.originalUrl.startsWith('/api/')) {
+    return res.status(400).json({ success: false, error: 'Некоректний ідентифікатор ресурсу' })
+  }
+
+  return res.status(404).render('404')
+}
+
+export const validateObjectIdParam =
+  (paramName = 'id') =>
+  (req, res, next) => {
+    const value = req.params[paramName]
+
+    if (!value || !mongoose.isValidObjectId(value)) {
+      return handleInvalidObjectIdResponse(req, res)
+    }
+
+    next()
+  }

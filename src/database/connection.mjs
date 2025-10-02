@@ -26,17 +26,28 @@ const bindConnectionEvents = () => {
   eventsBound = true
 }
 
-export const connectToDatabase = async ({ uri, dbName, seed = DATABASE_CONFIG.SEED } = {}) => {
+export const connectToDatabase = async ({
+  uri,
+  dbName,
+  seed = DATABASE_CONFIG.SEED,
+  autoIndex = DATABASE_CONFIG.AUTO_INDEX,
+  maxPoolSize = DATABASE_CONFIG.MAX_POOL_SIZE
+} = {}) => {
   bindConnectionEvents()
 
   const connectionString = buildMongoConnectionString(uri, dbName)
 
   if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(connectionString, {
-      autoIndex: true,
-      maxPoolSize: 10,
+    const connectOptions = {
+      autoIndex,
       serverSelectionTimeoutMS: 10000
-    })
+    }
+
+    if (typeof maxPoolSize === 'number') {
+      connectOptions.maxPoolSize = maxPoolSize
+    }
+
+    await mongoose.connect(connectionString, connectOptions)
   }
 
   return { connection: mongoose.connection, seed }

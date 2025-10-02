@@ -4,6 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { SERVER_CONFIG, DATABASE_CONFIG } from './config/index.mjs'
 import { connectToDatabase, disconnectFromDatabase } from './database/connection.mjs'
+import { ProductModel } from './models/products.mjs'
 import { setupGlobalErrorHandlers, expressErrorHandler } from './middleware/errorHandlers.mjs'
 import apiRouter from './routes/api/index.mjs'
 import webRouter from './routes/web/index.mjs'
@@ -48,6 +49,12 @@ let serverInstance = null
 
 export const startServer = async (options = {}) => {
   const { connection, seed } = await connectToDatabase(options)
+
+  if (!connection || connection.readyState !== 1) {
+    throw new Error('Не вдалося встановити підключення до MongoDB')
+  }
+
+  await ProductModel.syncIndexes()
 
   if (seed) {
     await seedProducts()
