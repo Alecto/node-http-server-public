@@ -1,43 +1,26 @@
-import { getHomePage, getTextPage, getNotFoundPage } from '../controllers/pageController.mjs'
-import { getTodos, getTodosJSON, createTodo } from '../controllers/todoController.mjs'
-import { getForm } from '../controllers/formController.mjs'
-import { requestErrorHandler } from '../middleware/errorHandlers.mjs'
-import * as logger from '../utils/logger.mjs'
+import { Router } from 'express'
+import {
+  getHomePage,
+  getProducts,
+  getNewProductForm,
+  getProduct,
+  createProduct
+} from '../controllers/productController.mjs'
 
-// Карта маршрутів для різних HTTP-методів
-const routes = {
-  GET: {
-    '/': getHomePage,
-    '/text': getTextPage,
-    '/json': getTodosJSON,
-    '/todos': getTodos,
-    '/form': getForm
-  },
-  POST: {
-    '/todos': createTodo
-  }
-}
+const router = Router()
 
-// Функція для маршрутизації запитів
-export const handleRequest = async (req, res) => {
-  try {
-    logger.log(`${req.method} ${req.url}`)
+router.route('/').get(getHomePage)
 
-    // Отримуємо базовий шлях без параметрів запиту
-    const path = req.url.split('?')[0]
+router.route('/products').get(getProducts).post(createProduct)
 
-    // Перевіряємо наявність обробника для методу та шляху
-    const methodRoutes = routes[req.method]
-    if (methodRoutes) {
-      const handler = methodRoutes[path]
-      if (handler) {
-        return await handler(req, res)
-      }
-    }
+router.route('/products/new').get(getNewProductForm)
 
-    // Якщо маршрут не знайдено
-    await getNotFoundPage(req, res)
-  } catch (error) {
-    requestErrorHandler(error, req, res)
-  }
+router.route('/products/:id').get(getProduct)
+
+export const setupRoutes = (app) => {
+  app.use('/', router)
+
+  app.use((req, res) => {
+    res.status(404).send('Сторінку не знайдено')
+  })
 }

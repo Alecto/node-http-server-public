@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Додати продукт</title>
+</head>
+
+<body>
+  <h1>Додати продукт</h1>
+  <nav>
+    <a href="/">Головна</a>
+    <a href="/products">Список продуктів</a>
+  </nav>
+
+  <form method="post" action="/products">
+    <label>
+      Назва
+      <input type="text" name="name" required />
+    </label>
+
+    <label>
+      Ціна
+      <input type="number" name="price" step="0.01" required />
+    </label>
+
+    <label>
+      Опис
+      <textarea name="description" required></textarea>
+    </label>
+
+    <button type="submit">Зберегти</button>
+  </form>
+</body>
+
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Продукти</title>
+</head>
+
+<body>
+  <h1>Список продуктів</h1>
+  <nav>
+    <a href="/">Головна</a>
+    <a href="/products/new">Додати продукт</a>
+  </nav>
+
+  <ul>
+    <% products.forEach(function(product) { %>
+      <li>
+        <strong>
+          <%= product.name %>
+        </strong> - $<%= product.price %>
+          <p>
+            <%= product.description %>
+          </p>
+          <a href="/products/<%= product.id %>">Деталі</a>
+      </li>
+      <% }) %>
+  </ul>
+</body>
+
+</html>

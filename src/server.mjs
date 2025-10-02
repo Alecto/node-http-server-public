@@ -1,29 +1,33 @@
-import http from 'node:http'
+import express from 'express'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import methodOverride from 'method-override'
 import { SERVER_CONFIG } from './config/index.mjs'
-import { handleRequest } from './routes/router.mjs'
 import { setupGlobalErrorHandlers } from './middleware/errorHandlers.mjs'
-import { initFormTemplate } from './controllers/formController.mjs'
+import { setupRoutes } from './routes/router.mjs'
 import * as logger from './utils/logger.mjs'
 
-// Налаштування глобальних обробників помилок
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+const app = express()
+
 setupGlobalErrorHandlers()
 
-// Ініціалізація шаблону форми
-initFormTemplate().catch((err) => {
-  logger.error('Помилка при ініціалізації шаблону форми:', err)
+app.set('view engine', 'ejs')
+app.set('views', path.join(__dirname, 'views'))
+
+app.use(express.urlencoded({ extended: true }))
+app.use(express.json())
+app.use(methodOverride('_method'))
+app.use(express.static(path.join(__dirname, 'public')))
+
+setupRoutes(app)
+
+const server = app.listen(SERVER_CONFIG.PORT, SERVER_CONFIG.HOST, () => {
+  logger.log(`Express сервер запущено на http://${SERVER_CONFIG.HOST}:${SERVER_CONFIG.PORT}`)
 })
 
-// Створення HTTP сервера
-const server = http.createServer(handleRequest)
-
-// Запуск сервера
-server.listen(SERVER_CONFIG.PORT, SERVER_CONFIG.HOST, () => {
-  logger.log(`Сервер запущено на http://${SERVER_CONFIG.HOST}:${SERVER_CONFIG.PORT}`)
-})
-
-// Обробка сигналів завершення роботи
-// Ці обробники забезпечують граційне завершення роботи сервера,
-// коли операційна система надсилає сигнали SIGTERM або SIGINT (Ctrl+C)
 process.on('SIGTERM', () => {
   logger.log('SIGTERM отримано, закриваємо сервер')
   server.close(() => {
