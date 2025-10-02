@@ -7,8 +7,7 @@ const productSchema = new Schema(
       required: true,
       trim: true,
       minlength: 2,
-      maxlength: 120,
-      index: true
+      maxlength: 120
     },
     price: {
       type: Number,
@@ -29,7 +28,10 @@ const productSchema = new Schema(
   }
 )
 
-productSchema.index({ name: 1 }, { unique: true, collation: { locale: 'en', strength: 2 } })
+productSchema.index(
+  { name: 1 },
+  { unique: true, name: 'product_name_case_insensitive', collation: { locale: 'en', strength: 2 } }
+)
 productSchema.index({ createdAt: -1 })
 
 productSchema.set('toJSON', {
