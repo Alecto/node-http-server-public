@@ -43,10 +43,14 @@ node-http-server/
 │   ├── CONFIG.md
 │   ├── DEPLOYMENT.md
 │   └── TESTING.md
+├── scripts/
+│   ├── checkServer.mjs   # інтеграційний прогін
+│   └── seedProducts.mjs  # імпорт JSON у MongoDB
+├── seeds/
+│   └── products.json     # початкові дані
 ├── src/
-│   ├── config/           # dotenv + buildMongoConnectionString
+│   ├── config/
 │   ├── controllers/
-│   ├── data/             # seed дані для MongoDB
 │   ├── database/         # connect/disconnect helpers
 │   ├── middleware/
 │   ├── models/           # Mongoose схеми/моделі

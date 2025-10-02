@@ -35,6 +35,8 @@
 
 ### 🧪 [Testing](TESTING.md)
 
+### 🔄 [Migration](MIGRATION.md)
+
 Керівництво з тестування:
 
 - Manual testing інструкції

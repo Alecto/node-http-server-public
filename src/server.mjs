@@ -2,7 +2,7 @@ import express from 'express'
 import methodOverride from 'method-override'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { SERVER_CONFIG, DATABASE_CONFIG } from './config/index.mjs'
+import { SERVER_CONFIG } from './config/index.mjs'
 import { connectToDatabase, disconnectFromDatabase } from './database/connection.mjs'
 import { ProductModel } from './models/products.mjs'
 import { setupGlobalErrorHandlers, expressErrorHandler } from './middleware/errorHandlers.mjs'
@@ -75,7 +75,7 @@ export const stopServer = async () => {
 }
 
 if (import.meta.url === `file://${__filename}`) {
-  startServer({ seed: DATABASE_CONFIG.SEED }).catch((error) => {
+  startServer().catch((error) => {
     logger.error('Помилка запуску сервера:', error)
     process.exit(1)
   })
