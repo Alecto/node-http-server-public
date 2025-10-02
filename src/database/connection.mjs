@@ -29,7 +29,6 @@ const bindConnectionEvents = () => {
 export const connectToDatabase = async ({
   uri,
   dbName,
-  seed = DATABASE_CONFIG.SEED,
   autoIndex = DATABASE_CONFIG.AUTO_INDEX,
   maxPoolSize = DATABASE_CONFIG.MAX_POOL_SIZE
 } = {}) => {
@@ -50,7 +49,7 @@ export const connectToDatabase = async ({
     await mongoose.connect(connectionString, connectOptions)
   }
 
-  return { connection: mongoose.connection, seed }
+  return { connection: mongoose.connection }
 }
 
 export const disconnectFromDatabase = async () => {

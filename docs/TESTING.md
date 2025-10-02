@@ -1,176 +1,77 @@
 # 🧪 Testing Guide
 
-## Manual Testing
+## Manual Testing (MongoDB + Express)
 
-### Web Interface Testing
+### Web Interface
 
 1. **Головна сторінка**
-
    ```
    GET http://localhost:3000/
    Expected: HTML сторінка з навігацією
    ```
-
 2. **Список продуктів**
-
    ```
    GET http://localhost:3000/products
-   Expected: HTML список з 5 продуктами
+   Expected: HTML список із даними з MongoDB
    ```
-
-3. **Форма додавання**
-
+3. **Форма створення**
    ```
    GET http://localhost:3000/products/new
-   Expected: HTML форма з полями
+   Expected: Форма з полями name/price/description
    ```
-
 4. **Створення продукту**
    ```
-   POST http://localhost:3000/products
-   Body: form data
-   Expected: Redirect to /products
+   POST http://localhost:3000/products (form-urlencoded)
+   Expected: Redirect на /products, новий продукт у списку
    ```
 
-### API Testing
-
-#### GET Requests
+### API Testing (ObjectId)
 
 ```bash
 # Отримати всі продукти
 curl -i -X GET http://localhost:3000/api/products
 
-# Отримати продукт за ID
-curl -i -X GET http://localhost:3000/api/products/1
+# Отримати продукт за ObjectId
+curl -i -X GET http://localhost:3000/api/products/<ObjectId>
 
-# Неіснуючий продукт (404)
-curl -i -X GET http://localhost:3000/api/products/999
-```
-
-#### POST Requests
-
-```bash
-# Створити новий продукт (ID генерується автоматично)
+# Створити (повертає новий ObjectId)
 curl -i -X POST http://localhost:3000/api/products \
   -H "Content-Type: application/json" \
-  -d '{
-    "name": "Test Product",
-    "price": 99.99,
-    "description": "Test description"
-  }'
+  -d '{"name":"Test","price":99.99,"description":"Test description"}'
 
-# Невалідні дані (400)
-curl -i -X POST http://localhost:3000/api/products \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "",
-    "price": -10,
-    "description": ""
-  }'
+# PUT / PATCH / DELETE працюють аналогічно, використовуйте валідний ObjectId
 ```
 
-#### PUT Requests
+## Automation Toolkit
 
-```bash
-# Повністю оновити продукт
-curl -i -X PUT http://localhost:3000/api/products/1 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Updated Product",
-    "price": 199.99,
-    "description": "Updated description"
-  }'
+- `yarn node scripts/checkServer.mjs` — запускає сервер, проходить усі ключові API та HTML маршрути, зупиняє сервер
+- `yarn node scripts/seedProducts.mjs` — очищає колекцію `products`, імпортує `seeds/products.json`
+- `yarn test` — інтеграційні тести (`node:test` + Supertest) на окремій БД `atlas-products-test`
 
-# Неіснуючий продукт (404)
-curl -i -X PUT http://localhost:3000/api/products/999 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Should Fail",
-    "price": 99.99,
-    "description": "Product not found"
-  }'
-```
+> Після `yarn test` колекції тестової БД дропаються, щоб не залишалося слідів.
 
-#### PATCH Requests
+## Expected Status Codes
 
-```bash
-# Частково оновити продукт
-curl -i -X PATCH http://localhost:3000/api/products/1 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "price": 149.99
-  }'
+| Operation | Endpoint                 | Success | Errors             |
+| --------- | ------------------------ | ------- | ------------------ |
+| Get All   | GET /api/products        | 200     | 500                |
+| Get One   | GET /api/products/:id    | 200     | 400, 404, 500      |
+| Create    | POST /api/products       | 201     | 400, 409, 500      |
+| Update    | PUT /api/products/:id    | 200     | 400, 404, 409, 500 |
+| Patch     | PATCH /api/products/:id  | 200     | 400, 404, 500      |
+| Delete    | DELETE /api/products/:id | 200     | 404, 500           |
 
-# Невірні дані (400) - пусте тіло
-curl -i -X PATCH http://localhost:3000/api/products/1 \
-  -H "Content-Type: application/json" \
-  -d '{}'
-```
+## Checklist
 
-#### DELETE Requests
+- [ ] MongoDB Atlas доступний, `MONGODB_URI` коректний
+- [ ] `seedProducts.mjs` виконано (опціонально) перед інтеграційними тестами
+- [ ] `yarn node scripts/checkServer.mjs` завершується без помилок
+- [ ] `yarn test` проходить і очищує тестову БД
+- [ ] Некоректні ObjectId повертають 400
+- [ ] Валідація цін, довжини рядків та унікальності імен працює
 
-```bash
-# Видалити продукт (використовуйте ID з попереднього створення)
-curl -i -X DELETE http://localhost:3000/api/products/6
+## Notes
 
-# Неіснуючий продукт (404)
-curl -i -X DELETE http://localhost:3000/api/products/999
-```
-
-## Expected HTTP Status Codes
-
-| Operation | Endpoint                 | Success | Error Cases   |
-| --------- | ------------------------ | ------- | ------------- |
-| Get All   | GET /api/products        | 200     | 500           |
-| Get One   | GET /api/products/:id    | 200     | 404, 500      |
-| Create    | POST /api/products       | 201     | 400, 500      |
-| Update    | PUT /api/products/:id    | 200     | 400, 404, 500 |
-| Patch     | PATCH /api/products/:id  | 200     | 400, 404, 500 |
-| Delete    | DELETE /api/products/:id | 200     | 404, 500      |
-
-## Testing Checklist
-
-### ✅ Functionality
-
-- [ ] All CRUD operations work
-- [ ] Data validation works
-- [ ] Error handling works
-- [ ] JSON responses are correct
-- [ ] HTML pages render properly
-- [ ] Automated tests pass (`yarn test`)
-
-### ✅ HTTP Compliance
-
-- [ ] Correct status codes
-- [ ] Proper HTTP methods
-- [ ] Content-Type headers
-- [ ] RESTful URL structure
-
-### ✅ Edge Cases
-
-- [ ] Invalid input data
-- [ ] Non-existent resources
-- [ ] Duplicate IDs
-- [ ] Empty requests
-- [ ] Large payloads
-
-### ✅ Performance
-
-- [ ] Response times < 100ms
-- [ ] Memory usage stable
-- [ ] No memory leaks
-- [ ] Graceful shutdown works
-
-## Automated Testing (Future)
-
-```javascript
-// Example with Jest + Supertest
-describe('Products API', () => {
-  test('GET /api/products returns all products', async () => {
-    const response = await request(app).get('/api/products').expect(200).expect('Content-Type', /json/)
-
-    expect(response.body.success).toBe(true)
-    expect(Array.isArray(response.body.data)).toBe(true)
-  })
-})
-```
+- Для валідації ObjectId використовується middleware `validateObjectIdParam`
+- `ProductModel.syncIndexes()` виконується при старті сервера, тому повторні запуски не блокують Atlas
+- У production рекомендується вимкнути `autoIndex` (керувати через змінні оточення)

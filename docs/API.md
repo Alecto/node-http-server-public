@@ -1,6 +1,6 @@
 # 🚀 Products API Documentation
 
-## Express.js HTTP Server з повними CRUD операціями
+## Express.js HTTP Server + MongoDB Atlas (Mongoose)
 
 ### 🌐 Base URL
 
@@ -14,7 +14,7 @@ http://localhost:3000
 
 ### Authentication
 
-Немає (навчальний проект)
+Немає (навчальний проект). Atlas URI зберігається в `.env`.
 
 ### Content-Type
 
@@ -27,7 +27,7 @@ http://localhost:3000
 
 ### 📋 GET /api/products
 
-Отримати список всіх продуктів
+Отримати список всіх продуктів (відсортовані за `createdAt` ↓).
 
 **Response 200:**
 
@@ -36,35 +36,46 @@ http://localhost:3000
   "success": true,
   "data": [
     {
-      "id": 1,
-      "name": "Laptop Pro 16",
-      "price": 2599.99,
-      "description": "Високопродуктивний ноутбук для професіоналів"
+      "_id": "68de36b18798562deaa309d2",
+      "name": "Wireless Headphones",
+      "price": 299.99,
+      "description": "Бездротові навушники з активним шумозаглушенням",
+      "createdAt": "2025-10-02T08:24:17.954Z",
+      "updatedAt": "2025-10-02T08:24:17.954Z"
     }
   ],
-  "count": 5
+  "count": 9
 }
 ```
 
 ### 🔍 GET /api/products/:id
 
-Отримати один продукт за ID
-
-**Response 200:**
+Отримати продукт за MongoDB ObjectId.
 
 ```json
 {
   "success": true,
   "data": {
-    "id": 1,
-    "name": "Laptop Pro 16",
-    "price": 2599.99,
-    "description": "Високопродуктивний ноутбук для професіоналів"
+    "_id": "68de36b18798562deaa309d2",
+    "name": "Wireless Headphones",
+    "price": 299.99,
+    "description": "Бездротові навушники з активним шумозаглушенням",
+    "createdAt": "2025-10-02T08:24:17.954Z",
+    "updatedAt": "2025-10-02T08:24:17.954Z"
   }
 }
 ```
 
-**Response 404:**
+**Response 400 (некоректний ObjectId):**
+
+```json
+{
+  "success": false,
+  "error": "Некоректний ідентифікатор ресурсу"
+}
+```
+
+**Response 404 (не знайдено):**
 
 ```json
 {
@@ -75,7 +86,7 @@ http://localhost:3000
 
 ### ➕ POST /api/products
 
-Створити новий продукт (ID генерується автоматично на сервері)
+Створити новий продукт.
 
 **Request Body:**
 
@@ -93,37 +104,20 @@ http://localhost:3000
 {
   "success": true,
   "data": {
-    "id": 6,
+    "_id": "68de3781380836c2a6895c3c",
     "name": "New Product",
     "price": 199.99,
-    "description": "Опис нового продукту"
+    "description": "Опис нового продукту",
+    "createdAt": "2025-10-02T08:27:45.124Z",
+    "updatedAt": "2025-10-02T08:27:45.124Z"
   },
   "message": "Продукт успішно створено"
 }
 ```
 
-**Response 400:**
-
-```json
-{
-  "success": false,
-  "error": "Невірні дані продукту: перевірте name, price та description"
-}
-```
-
 ### ✏️ PUT /api/products/:id
 
-Повністю замінити продукт (усі поля обов'язкові)
-
-**Request Body:**
-
-```json
-{
-  "name": "Updated Product",
-  "price": 299.99,
-  "description": "Оновлений опис"
-}
-```
+Повністю замінити продукт (всі поля обовʼязкові).
 
 **Response 200:**
 
@@ -131,10 +125,12 @@ http://localhost:3000
 {
   "success": true,
   "data": {
-    "id": 1,
-    "name": "Updated Product",
-    "price": 299.99,
-    "description": "Оновлений опис"
+    "_id": "68de3781380836c2a6895c3c",
+    "name": "New Product Replaced",
+    "price": 199.99,
+    "description": "Оновлений опис",
+    "createdAt": "2025-10-02T08:27:45.124Z",
+    "updatedAt": "2025-10-02T08:27:45.517Z"
   },
   "message": "Продукт успішно оновлено"
 }
@@ -142,15 +138,7 @@ http://localhost:3000
 
 ### ♻️ PATCH /api/products/:id
 
-Частково оновити продукт (оновлюються лише передані поля)
-
-**Request Body:**
-
-```json
-{
-  "price": 279.99
-}
-```
+Частково оновити продукт.
 
 **Response 200:**
 
@@ -158,10 +146,12 @@ http://localhost:3000
 {
   "success": true,
   "data": {
-    "id": 1,
-    "name": "Laptop Pro 16",
-    "price": 279.99,
-    "description": "Високопродуктивний ноутбук для професіоналів"
+    "_id": "68de3781380836c2a6895c3c",
+    "name": "New Product",
+    "price": 209.99,
+    "description": "Опис нового продукту",
+    "createdAt": "2025-10-02T08:27:45.124Z",
+    "updatedAt": "2025-10-02T08:27:45.385Z"
   },
   "message": "Продукт успішно оновлено"
 }
@@ -169,7 +159,7 @@ http://localhost:3000
 
 ### 🗑️ DELETE /api/products/:id
 
-Видалити продукт
+Видалити продукт за ObjectId.
 
 **Response 200:**
 
@@ -177,10 +167,12 @@ http://localhost:3000
 {
   "success": true,
   "data": {
-    "id": 1,
-    "name": "Deleted Product",
-    "price": 199.99,
-    "description": "Видалений продукт"
+    "_id": "68de3781380836c2a6895c3c",
+    "name": "New Product Replaced",
+    "price": 209.99,
+    "description": "Опис нового продукту",
+    "createdAt": "2025-10-02T08:27:45.124Z",
+    "updatedAt": "2025-10-02T08:27:45.517З"
   },
   "message": "Продукт успішно видалено"
 }
@@ -190,43 +182,28 @@ http://localhost:3000
 
 ## 📊 HTTP Status Codes
 
-| Code | Description                     |
-| ---- | ------------------------------- |
-| 200  | OK - Успішний запит             |
-| 201  | Created - Ресурс створено       |
-| 400  | Bad Request - Помилка валідації |
-| 404  | Not Found - Ресурс не знайдено  |
-| 409  | Conflict - Дублікат ресурсу     |
-| 500  | Internal Server Error           |
+| Code | Description                                |
+| ---- | ------------------------------------------ |
+| 200  | OK                                         |
+| 201  | Created                                    |
+| 400  | Bad Request (валидація / ObjectId)         |
+| 404  | Not Found                                  |
+| 409  | Conflict (дублікат за унікальним індексом) |
+| 500  | Internal Server Error                      |
 
 ---
 
 ## 🧪 Testing Examples
 
-### cURL Examples
-
 ```bash
-# Отримати всі продукти
+# Отримати всі продукти (MongoDB Atlas)
+yarn node scripts/checkServer.mjs   # комплексна перевірка
+
+# Або базові cURL
 curl -X GET http://localhost:3000/api/products
-
-# Отримати продукт за ID
-curl -X GET http://localhost:3000/api/products/1
-
-# Створити новий продукт (ID генерується автоматично)
 curl -X POST http://localhost:3000/api/products \
   -H "Content-Type: application/json" \
-  -d '{"name":"Test Product","price":99.99,"description":"Test description"}'
-
-# Повністю оновити продукт (PUT)
-curl -X PUT http://localhost:3000/api/products/1 \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Updated Name","price":199.99,"description":"Updated description"}'
-
-# Частково оновити продукт (PATCH)
-curl -X PATCH http://localhost:3000/api/products/1 \
-  -H "Content-Type: application/json" \
-  -d '{"price":149.99}'
-
-# Видалити продукт
-curl -X DELETE http://localhost:3000/api/products/1
+  -d '{"name":"Test","price":99.99,"description":"desc"}'
 ```
+
+> Повний сценарій тестування описано в `docs/TESTING.md`.
