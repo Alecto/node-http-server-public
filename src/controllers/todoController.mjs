@@ -36,7 +36,11 @@ export const createTodo = async (req, res) => {
     logger.log('Додавання нового todo')
     res.setHeader('Content-Type', CONTENT_TYPE.TEXT)
 
-    if (req.headers['content-type'] === CONTENT_TYPE.FORM) {
+    const contentType = req.headers['content-type'] || ''
+    const isFormRequest = contentType.includes(CONTENT_TYPE.FORM)
+    const isJsonRequest = contentType.includes(CONTENT_TYPE.JSON.split(';')[0])
+
+    if (isFormRequest) {
       const body = await readRequestBody(req)
 
       try {
@@ -66,7 +70,7 @@ export const createTodo = async (req, res) => {
         res.statusCode = HTTP_STATUS.BAD_REQUEST
         res.end('Невірні дані форми')
       }
-    } else if (req.headers['content-type'] === CONTENT_TYPE.JSON) {
+    } else if (isJsonRequest) {
       const dataJSON = await readRequestBody(req)
 
       try {

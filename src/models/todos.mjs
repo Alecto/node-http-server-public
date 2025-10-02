@@ -41,9 +41,9 @@ export const addTodo = (todo) => {
 // Функція для валідації todo
 export const validateTodo = (todo) => {
   if (!todo) return false
-  if (typeof todo.id !== 'number') return false
+  if (typeof todo.id !== 'number' || !Number.isFinite(todo.id)) return false
   if (typeof todo.title !== 'string' || todo.title.trim() === '') return false
-  if (typeof todo.userId !== 'number') return false
+  if (typeof todo.userId !== 'number' || !Number.isFinite(todo.userId)) return false
   if (typeof todo.completed !== 'boolean') return false
   return true
-} 
+}

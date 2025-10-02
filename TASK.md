@@ -12,10 +12,15 @@
 
    - Ініціалізуйте новий Node.js проект:
      ```bash
+     yarn init -y
+     # або
      npm init -y
      ```
    - Встановіть необхідні залежності:
      ```bash
+     yarn add dotenv
+     yarn add -D nodemon
+     # або
      npm install dotenv
      npm install -D nodemon
      ```
@@ -26,7 +31,7 @@
        "dev": "nodemon index.mjs"
      }
      ```
-   - Створіть файл .env для конфігурації:
+   - Створіть файл .env для конфігурації (цей файл не зберігається в репозиторії, його потрібно створити вручну):
      ```
      PORT=3000
      HOST=localhost
@@ -91,7 +96,7 @@
      - **todoController.mjs** - для операцій з завданнями (getTodos, getTodosJSON, createTodo)
      - **formController.mjs** - для роботи з формами (getForm, initFormTemplate)
 
-   - **src/middleware/errorHandler.mjs** - глобальна обробка помилок:
+   - **src/middleware/errorHandlers.mjs** - глобальна обробка помилок:
 
      - Створіть функцію errorHandler для обробки помилок під час запитів
      - Реалізуйте функцію setupGlobalErrorHandlers для налаштування глобальних обробників помилок

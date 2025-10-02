@@ -39,6 +39,8 @@ git clone <url-репозиторію>
 cd node-http-server
 
 # Встановити залежності
+yarn install
+# або
 npm install
 
 # Створити .env файл (або використовувати існуючий)
@@ -50,9 +52,13 @@ npm install
 
 ```bash
 # Запуск в режимі розробки (з автоматичним перезавантаженням)
+yarn dev
+# або
 npm run dev
 
 # Запуск в звичайному режимі
+yarn start
+# або
 npm start
 ```
 
