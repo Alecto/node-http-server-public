@@ -40,11 +40,13 @@ const runChecks = async () => {
     const listJson = await expectJson(await fetch(apiBase), 200)
     step('GET /api/products', { count: listJson.count, first: listJson.data[0] })
 
-    if (!Array.isArray(listJson.data) || listJson.data.length === 0) {
-      throw new Error('Список продуктів порожній або невалідний')
-    }
+    let sampleProductId = null
 
-    const sampleProductId = listJson.data[0].id || listJson.data[0]._id
+    if (Array.isArray(listJson.data) && listJson.data.length > 0) {
+      sampleProductId = listJson.data[0].id || listJson.data[0]._id
+    } else {
+      console.warn('\n⚠️ Колекція продуктів порожня. Новий продукт буде створено в межах тесту.')
+    }
 
     // 2. POST створення продукту
     const newProduct = {
@@ -63,6 +65,7 @@ const runChecks = async () => {
     )
 
     const createdId = createdJson.data.id || createdJson.data._id
+    sampleProductId = sampleProductId || createdId
     step('POST /api/products', createdJson)
 
     // 3. GET конкретного продукту
