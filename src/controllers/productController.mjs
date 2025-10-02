@@ -5,8 +5,10 @@ import * as logger from '../utils/logger.mjs'
 
 export const getProductsAPI = async (req, res, next) => {
   try {
-    const products = await ProductModel.find().sort({ createdAt: -1 }).lean()
-    res.status(200).json({ success: true, data: products, count: products.length })
+    const products = await ProductModel.find().sort({ createdAt: -1 }).lean({ virtuals: true })
+    const total = await ProductModel.countDocuments()
+    logger.debug('getProductsAPI', { returned: products.length, total })
+    res.status(200).json({ success: true, data: products, count: products.length, total })
   } catch (error) {
     next(error)
   }
@@ -14,7 +16,7 @@ export const getProductsAPI = async (req, res, next) => {
 
 export const getProductAPI = async (req, res, next) => {
   try {
-    const product = await ProductModel.findById(req.params.id).lean()
+    const product = await ProductModel.findById(req.params.id).lean({ virtuals: true })
 
     if (!product) {
       return res.status(404).json({ success: false, error: 'Продукт не знайдено' })
@@ -45,7 +47,7 @@ export const replaceProductAPI = async (req, res, next) => {
     const product = await ProductModel.findByIdAndUpdate(req.params.id, req.validatedProduct, {
       new: true,
       runValidators: true
-    }).lean()
+    }).lean({ virtuals: true })
 
     if (!product) {
       return res.status(404).json({ success: false, error: 'Продукт не знайдено' })
@@ -62,7 +64,7 @@ export const updateProductAPI = async (req, res, next) => {
     const product = await ProductModel.findByIdAndUpdate(req.params.id, req.validatedProductUpdates, {
       new: true,
       runValidators: true
-    }).lean()
+    }).lean({ virtuals: true })
 
     if (!product) {
       return res.status(404).json({ success: false, error: 'Продукт не знайдено' })
@@ -76,7 +78,7 @@ export const updateProductAPI = async (req, res, next) => {
 
 export const deleteProductAPI = async (req, res, next) => {
   try {
-    const product = await ProductModel.findByIdAndDelete(req.params.id).lean()
+    const product = await ProductModel.findByIdAndDelete(req.params.id).lean({ virtuals: true })
 
     if (!product) {
       return res.status(404).json({ success: false, error: 'Продукт не знайдено' })
@@ -92,8 +94,10 @@ export const deleteProductAPI = async (req, res, next) => {
 
 export const getProducts = async (req, res, next) => {
   try {
-    const products = await ProductModel.find().sort({ createdAt: -1 }).lean()
-    res.render('products', { products })
+    const products = await ProductModel.find().sort({ createdAt: -1 }).lean({ virtuals: true })
+    const total = await ProductModel.countDocuments()
+    logger.debug('getProducts.view', { returned: products.length, total })
+    res.render('products', { products, total })
   } catch (error) {
     next(error)
   }
@@ -101,7 +105,7 @@ export const getProducts = async (req, res, next) => {
 
 export const getProduct = async (req, res, next) => {
   try {
-    const product = await ProductModel.findById(req.params.id).lean()
+    const product = await ProductModel.findById(req.params.id)
 
     if (!product) {
       return res.status(404).render('404')
@@ -119,7 +123,7 @@ export const getNewProductForm = (req, res) => {
 
 export const getEditProductForm = async (req, res, next) => {
   try {
-    const product = await ProductModel.findById(req.params.id).lean()
+    const product = await ProductModel.findById(req.params.id)
 
     if (!product) {
       return res.status(404).render('404')
