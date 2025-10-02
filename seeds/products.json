@@ -1,0 +1,47 @@
+[
+  {
+    "name": "Laptop Pro 16",
+    "price": 2599.99,
+    "description": "Високопродуктивний ноутбук для професіоналів з 16-дюймовим дисплеєм"
+  },
+  {
+    "name": "Wireless Headphones",
+    "price": 299.99,
+    "description": "Бездротові навушники з активним шумозаглушенням"
+  },
+  {
+    "name": "Smart Watch",
+    "price": 399.99,
+    "description": "Розумний годинник з моніторингом здоров'я та фітнес-трекером"
+  },
+  {
+    "name": "Gaming Mouse",
+    "price": 79.99,
+    "description": "Ігрова миша з високою точністю та RGB підсвічуванням"
+  },
+  {
+    "name": "Mechanical Keyboard",
+    "price": 159.99,
+    "description": "Механічна клавіатура з тактильними перемикачами"
+  },
+  {
+    "name": "4K Monitor 27\"",
+    "price": 549.99,
+    "description": "27-дюймовий IPS монітор з роздільною здатністю 4K та HDR підтримкою"
+  },
+  {
+    "name": "Portable SSD 2TB",
+    "price": 299.99,
+    "description": "Портативний SSD-накопичувач з інтерфейсом USB-C та високою швидкістю"
+  },
+  {
+    "name": "Noise Cancelling Earbuds",
+    "price": 189.99,
+    "description": "Компактні навушники з активним шумозаглушенням та підтримкою Bluetooth 5.3"
+  },
+  {
+    "name": "Smart Home Hub",
+    "price": 129.99,
+    "description": "Центр керування розумним домом з підтримкою голосових асистентів"
+  }
+]
