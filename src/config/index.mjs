@@ -32,7 +32,6 @@ const rootUser = process.env.MAIN_DB_ROOT_USER || process.env.MONGODB_USER || ''
 const rootPass = process.env.MAIN_DB_ROOT_PASS || process.env.MONGODB_PASSWORD || ''
 const authSource = process.env.MONGODB_AUTH_SOURCE || 'admin'
 const dbName = process.env.DB_NAME || process.env.MAIN_DB_NAME || fallbackDbName
-const shouldSeed = (process.env.DB_SEED ?? 'true').toLowerCase() === 'true'
 const nodeEnv = process.env.NODE_ENV || 'development'
 const autoIndex = parseBoolean(process.env.MONGOOSE_AUTO_INDEX, nodeEnv !== 'production')
 const maxPoolSize = parseInteger(process.env.MONGOOSE_MAX_POOL_SIZE)
@@ -53,7 +52,6 @@ export const DATABASE_CONFIG = {
   USER: rootUser,
   PASSWORD: rootPass,
   AUTH_SOURCE: authSource,
-  SEED: shouldSeed,
   AUTO_INDEX: autoIndex,
   MAX_POOL_SIZE: maxPoolSize
 }

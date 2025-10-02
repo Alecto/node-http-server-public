@@ -8,7 +8,6 @@ import { ProductModel } from './models/products.mjs'
 import { setupGlobalErrorHandlers, expressErrorHandler } from './middleware/errorHandlers.mjs'
 import apiRouter from './routes/api/index.mjs'
 import webRouter from './routes/web/index.mjs'
-import { seedProducts } from './data/products.mjs'
 import * as logger from './utils/logger.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -48,17 +47,13 @@ app.use(expressErrorHandler)
 let serverInstance = null
 
 export const startServer = async (options = {}) => {
-  const { connection, seed } = await connectToDatabase(options)
+  const { connection } = await connectToDatabase(options)
 
   if (!connection || connection.readyState !== 1) {
     throw new Error('Не вдалося встановити підключення до MongoDB')
   }
 
   await ProductModel.syncIndexes()
-
-  if (seed) {
-    await seedProducts()
-  }
 
   if (!serverInstance) {
     serverInstance = app.listen(SERVER_CONFIG.PORT, SERVER_CONFIG.HOST, () => {
