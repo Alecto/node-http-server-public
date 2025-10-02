@@ -1,4 +1,4 @@
-# Node.js HTTP Server
+# Express.js Basic Migration Task
 
 **Складність:** Середня
 
@@ -6,165 +6,82 @@
 
 ---
 
-### **Постановка задачі:**
+### **Постановка задачі (міграція з Node HTTP на Express)**
 
-1. **Налаштування проекту:**
+1. **Підготовка**
 
-   - Ініціалізуйте новий Node.js проект:
-     ```bash
-     yarn init -y
-     # або
-     npm init -y
-     ```
-   - Встановіть необхідні залежності:
-     ```bash
-     yarn add dotenv
-     yarn add -D nodemon
-     # або
-     npm install dotenv
-     npm install -D nodemon
-     ```
-   - Налаштуйте скрипти в package.json:
-     ```json
-     "scripts": {
-       "start": "node index.mjs",
-       "dev": "nodemon index.mjs"
-     }
-     ```
-   - Створіть файл .env для конфігурації (цей файл не зберігається в репозиторії, його потрібно створити вручну):
-     ```
-     PORT=3000
-     HOST=localhost
-     ```
+   - Видаліть залежності та файли, пов’язані з todos (контролери, моделі, HTML шаблони).
+   - Додайте Express, EJS та method-override до `package.json`.
+   - Переконайтесь, що `README.md` описує саме Express версію (мінімальний CRUD для продуктів).
 
-2. **Структура проекту:**
+2. **Структура проекту**
 
    - Створіть наступну структуру каталогів та файлів:
      ```
      node-http-server/
      ├── src/
-     │   ├── config/           # Конфігурація
-     │   ├── controllers/      # Контролери
-     │   ├── models/           # Моделі даних
-     │   ├── routes/           # Маршрутизація
-     │   ├── middleware/       # Middleware
-     │   ├── utils/            # Утиліти
-     │   ├── views/            # Шаблони
-     │   └── server.mjs        # Сервер
-     ├── index.mjs             # Точка входу
-     ├── .env                  # Змінні середовища
-     ├── package.json          # Залежності та скрипти
-     └── README.md             # Документація
+     │   ├── config/
+     │   ├── controllers/
+     │   │   ├── pageController.mjs
+     │   │   └── productController.mjs
+     │   ├── models/              # in-memory products
+     │   ├── routes/
+     │   │   └── router.mjs
+     │   ├── middleware/
+     │   ├── views/               # EJS шаблони
+     │   └── server.mjs           # Express сервер
+     ├── index.mjs
+     ├── package.json
+     └── README.md
      ```
 
-3. **Основні файли та компоненти:**
+3. **Міграція на Express**
 
-   - **index.mjs** - головний файл для запуску сервера:
+   - Замініть `http.createServer` на Express `app` у `src/server.mjs`.
+   - Налаштуйте `express.urlencoded`, `express.json`, `method-override('_method')`.
+   - Встановіть EJS як template engine та вкажіть папку `views`.
+   - Підключіть маршрути через `setupRoutes(app)`.
 
-     ```javascript
-     import './src/server.mjs'
-     ```
+4. **Оновлення маршрутів і контролерів**
 
-   - **src/server.mjs** - налаштування HTTP сервера з обробкою запитів та сигналів завершення:
+   - Створіть контролер `productController.mjs` із методами:
+     - `getHomePage` — головна сторінка з навігацією.
+     - `getProducts` — список продуктів (HTML).
+     - `getNewProductForm` — форма створення.
+     - `getProduct` — деталі одного продукту.
+     - `createProduct` — створення продукту по POST-формі.
+   - Замініть маршрути todos на маршрути products у `src/routes/router.mjs` із ланцюговими викликами `.route()`.
 
-     - Імпортуйте модуль http
-     - Створіть сервер, що слухає порт та хост з конфігурації
-     - Налаштуйте обробники для сигналів SIGTERM і SIGINT
-     - Імпортуйте та використайте функцію handleRequest з router.mjs для обробки запитів
-     - Імпортуйте функцію setupGlobalErrorHandlers для налаштування глобальних обробників помилок
-     - Викличте initFormTemplate для ініціалізації шаблону форми
+5. **Моделі та дані**
 
-   - **src/config/index.mjs** - конфігурація сервера та шляхів до файлів:
+   - Створіть просту in-memory модель `src/models/products.mjs` з первинними даними (масив, `addProduct`, `getProductById`).
+   - Переконайтесь, що кожне нове створення продукту збільшує `id`.
 
-     - Використайте dotenv для завантаження змінних з .env
-     - Визначте порт, хост та шляхи до шаблонів (TEMPLATES_DIR, FORM_TEMPLATE)
+6. **Шаблони**
 
-   - **src/routes/router.mjs** - маршрутизація запитів:
+   - Додайте EJS файли: `index.ejs`, `products.ejs`, `product-form.ejs`, `product-detail.ejs`.
+   - У кожному шаблоні передбачте навігацію між головною, списком та формою.
 
-     - Створіть функцію handleRequest для обробки запитів
-     - Реалізуйте маршрутизацію для різних URL та HTTP методів:
-       - GET / - головна сторінка
-       - GET /text - текстова сторінка
-       - GET /json - JSON відповідь з todos
-       - GET /todos - сторінка зі списком todos
-       - GET /form - сторінка з формою
-       - POST /todos - додавання нового todo
+7. **Запуск та тестування**
 
-   - **src/controllers/** - контролери для обробки різних типів запитів:
+   - Запустіть сервер (`yarn dev`) і перевірте:
+     - `GET /`
+     - `GET /products`
+     - `GET /products/new`
+     - `GET /products/:id`
+     - `POST /products` (через HTML форму)
+   - Переконайтесь, що при POST на форму продукт додається та відображається в списку.
 
-     - **pageController.mjs** - для відображення HTML сторінок (getHomePage, getTextPage, getNotFoundPage)
-     - **todoController.mjs** - для операцій з завданнями (getTodos, getTodosJSON, createTodo)
-     - **formController.mjs** - для роботи з формами (getForm, initFormTemplate)
+8. **Документація**
 
-   - **src/middleware/errorHandlers.mjs** - глобальна обробка помилок:
+   - Оновіть README під Express реалізацію.
+   - Опишіть у README базові ендпоінти та як запустити проект.
 
-     - Створіть функцію errorHandler для обробки помилок під час запитів
-     - Реалізуйте функцію setupGlobalErrorHandlers для налаштування глобальних обробників помилок
+## Додаткові ідеї
 
-   - **src/utils/** - утиліти:
-
-     - **logger.mjs** - для логування (log, error)
-     - **templates.mjs** - для роботи з шаблонами (readTemplate, replaceTemplate)
-     - **request.mjs** - для обробки тіла запиту (parseBody)
-
-   - **src/views/form.html** - HTML шаблон для форми з полями для додавання нового todo
-
-4. **Реалізація функціональності:**
-
-   - **Маршрутизація**:
-
-     - Обробка GET запитів для відображення сторінок
-     - Обробка POST запитів для створення нових завдань
-     - Логування HTTP методу та URL всіх запитів
-
-   - **Контролери**:
-
-     - Створіть функцію для отримання списку завдань (getTodos)
-     - Створіть функцію для додавання нового завдання (createTodo)
-     - Реалізуйте відображення сторінок з різними типами контенту (HTML, текст, JSON)
-
-   - **Середній шар (Middleware)**:
-
-     - Реалізуйте функцію для обробки помилок (errorHandler)
-     - Налаштуйте глобальні обробники для необроблених помилок та відхилених промісів
-
-   - **Утиліти**:
-     - Функції для парсингу тіла запиту (parseBody)
-     - Функції для роботи з шаблонами (readTemplate, replaceTemplate)
-     - Функції для логування (log, error)
-
-5. **Запуск та тестування:**
-   - Запустіть сервер у режимі розробки:
-     ```bash
-     npm run dev
-     ```
-   - Перевірте роботу всіх ендпоінтів:
-     - GET / - головна сторінка
-     - GET /text - текстова відповідь
-     - GET /json - JSON відповідь
-     - GET /todos - список завдань
-     - POST /todos - додавання нового завдання
-     - GET /form - форма для додавання завдання
-
----
-
-### **Додаткові завдання (необов'язково):**
-
-1. **Розширення функціональності**:
-
-   - Додайте можливість видалення та оновлення завдань (DELETE та PUT запити)
-   - Реалізуйте валідацію вхідних даних
-   - Додайте фільтрацію та пагінацію для списку завдань
-
-2. **Покращення архітектури**:
-
-   - Впровадіть більш гнучку систему маршрутизації
-   - Реалізуйте повноцінний шаблонізатор для генерації HTML
-   - Додайте систему логування з різними рівнями (info, warn, error, debug)
-
-3. **Збереження даних**:
-   - Реалізуйте збереження завдань у файл
-   - Додайте взаємодію з базою даних (MongoDB, SQLite, MySQL)
+- Додайте валідацію полів форми.
+- Реалізуйте простий API `/api/products` (GET/POST).
+- Ведіть журнал дій у логгері при кожному запиті.
 
 ---
 
@@ -211,26 +128,22 @@
 node-http-server/
 ├── src/
 │   ├── config/
-│   │   └── index.mjs          # Конфігурація сервера
 │   ├── controllers/
-│   │   ├── pageController.mjs # Контролер HTML сторінок
-│   │   ├── todoController.mjs # Контролер для завдань
-│   │   └── formController.mjs # Контролер для форм
+│   │   ├── pageController.mjs
+│   │   └── productController.mjs
 │   ├── models/
-│   │   └── (порожня тека для майбутніх моделей)
+│   │   └── products.mjs
 │   ├── routes/
-│   │   └── router.mjs         # Маршрутизація запитів
+│   │   └── router.mjs
 │   ├── middleware/
-│   │   └── errorHandler.mjs   # Обробка помилок
-│   ├── utils/
-│   │   ├── logger.mjs         # Утиліти для логування
-│   │   ├── templates.mjs      # Утиліти для шаблонів
-│   │   └── request.mjs        # Утиліти для обробки запитів
 │   ├── views/
-│   │   └── form.html          # HTML шаблон форми
-│   └── server.mjs             # HTTP сервер
-├── index.mjs                  # Точка входу
-├── .env                       # Змінні середовища
-├── package.json               # Залежності та скрипти
-└── README.md                  # Документація
+│   │   ├── index.ejs
+│   │   ├── products.ejs
+│   │   ├── product-form.ejs
+│   │   └── product-detail.ejs
+│   └── server.mjs
+├── index.mjs
+├── .env
+├── package.json
+└── README.md
 ```
