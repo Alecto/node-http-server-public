@@ -4,8 +4,7 @@ import productsRouter from './products.mjs'
 
 const web = Router()
 
-// Підключення роутерів
-web.use('/', pagesRouter) // Головна сторінка та загальні маршрути
-web.use('/products', productsRouter) // Products Web Interface
+web.use('/', pagesRouter)
+web.use('/products', productsRouter)
 
 export default web

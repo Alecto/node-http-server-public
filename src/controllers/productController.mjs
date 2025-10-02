@@ -1,342 +1,192 @@
-import {
-  getAllProducts,
-  getProductById,
-  addProduct,
-  replaceProduct,
-  patchProduct,
-  deleteProduct,
-  productExists,
-  getNextId,
-  validateProduct
-} from '../models/products.mjs'
+import { ProductModel } from '../models/products.mjs'
 import * as logger from '../utils/logger.mjs'
 
 // ============ JSON API ENDPOINTS ============
 
-// API: Отримання списку продуктів (JSON)
-export const getProductsAPI = (req, res) => {
+export const getProductsAPI = async (req, res, next) => {
   try {
-    logger.log('API: Отримання списку продуктів')
-    const list = getAllProducts()
-    res.status(200).json({
-      success: true,
-      data: list,
-      count: list.length
-    })
+    const products = await ProductModel.find().sort({ createdAt: -1 }).lean()
+    res.status(200).json({ success: true, data: products, count: products.length })
   } catch (error) {
-    logger.error('API: Помилка при отриманні списку продуктів:', error)
-    res.status(500).json({
-      success: false,
-      error: 'Внутрішня помилка сервера'
-    })
+    next(error)
   }
 }
 
-// API: Отримання одного продукту за ID (JSON)
-export const getProductAPI = (req, res) => {
+export const getProductAPI = async (req, res, next) => {
   try {
-    const { id } = req.params
-    const product = getProductById(id)
+    const product = await ProductModel.findById(req.params.id).lean()
 
     if (!product) {
-      logger.log(`API: Продукт з ID ${id} не знайдено`)
-      return res.status(404).json({
-        success: false,
-        error: 'Продукт не знайдено'
-      })
+      return res.status(404).json({ success: false, error: 'Продукт не знайдено' })
     }
 
-    logger.log(`API: Отримання продукту з ID ${id}`)
-    res.status(200).json({
-      success: true,
-      data: product
-    })
+    res.status(200).json({ success: true, data: product })
   } catch (error) {
-    logger.error('API: Помилка при отриманні продукту:', error)
-    res.status(500).json({
-      success: false,
-      error: 'Внутрішня помилка сервера'
-    })
+    next(error)
   }
 }
 
-// API: Створення нового продукту (JSON)
-export const createProductAPI = (req, res) => {
+export const createProductAPI = async (req, res, next) => {
   try {
-    logger.log('API: Створення нового продукту')
-
-    const product = {
-      id: getNextId(),
-      ...req.validatedProduct
-    }
-
-    addProduct(product)
-    logger.log('API: Продукт успішно створено', product)
-    res.status(201).json({
-      success: true,
-      data: product,
-      message: 'Продукт успішно створено'
+    const product = await ProductModel.create({
+      name: req.validatedProduct.name,
+      price: req.validatedProduct.price,
+      description: req.validatedProduct.description
     })
+
+    res.status(201).json({ success: true, data: product.toJSON(), message: 'Продукт успішно створено' })
   } catch (error) {
-    logger.error('API: Помилка при створенні продукту:', error)
-    res.status(500).json({
-      success: false,
-      error: 'Внутрішня помилка сервера'
-    })
+    next(error)
   }
 }
 
-// API: Оновлення продукту (JSON)
-export const updateProductAPI = (req, res) => {
+export const replaceProductAPI = async (req, res, next) => {
   try {
-    const { id } = req.params
-    logger.log(`API: Часткове оновлення продукту (PATCH) з ID ${id}`)
+    const product = await ProductModel.findByIdAndUpdate(req.params.id, req.validatedProduct, {
+      new: true,
+      runValidators: true
+    }).lean()
 
-    const updatedProduct = patchProduct(id, req.validatedProductUpdates)
-
-    if (!updatedProduct) {
-      logger.log(`API: Продукт з ID ${id} не знайдено для оновлення`)
-      return res.status(404).json({
-        success: false,
-        error: 'Продукт не знайдено'
-      })
+    if (!product) {
+      return res.status(404).json({ success: false, error: 'Продукт не знайдено' })
     }
 
-    logger.log('API: Продукт успішно оновлено', updatedProduct)
-    res.status(200).json({
-      success: true,
-      data: updatedProduct,
-      message: 'Продукт успішно оновлено'
-    })
+    res.status(200).json({ success: true, data: product, message: 'Продукт успішно оновлено' })
   } catch (error) {
-    logger.error('API: Помилка при оновленні продукту:', error)
-    res.status(500).json({
-      success: false,
-      error: 'Внутрішня помилка сервера'
-    })
+    next(error)
   }
 }
 
-// API: Видалення продукту (JSON)
-export const deleteProductAPI = (req, res) => {
+export const updateProductAPI = async (req, res, next) => {
   try {
-    const { id } = req.params
-    logger.log(`API: Видалення продукту з ID ${id}`)
+    const product = await ProductModel.findByIdAndUpdate(req.params.id, req.validatedProductUpdates, {
+      new: true,
+      runValidators: true
+    }).lean()
 
-    const deletedProduct = deleteProduct(id)
-
-    if (!deletedProduct) {
-      logger.log(`API: Продукт з ID ${id} не знайдено для видалення`)
-      return res.status(404).json({
-        success: false,
-        error: 'Продукт не знайдено'
-      })
+    if (!product) {
+      return res.status(404).json({ success: false, error: 'Продукт не знайдено' })
     }
 
-    logger.log('API: Продукт успішно видалено', deletedProduct)
-    res.status(200).json({
-      success: true,
-      data: deletedProduct,
-      message: 'Продукт успішно видалено'
-    })
+    res.status(200).json({ success: true, data: product, message: 'Продукт успішно оновлено' })
   } catch (error) {
-    logger.error('API: Помилка при видаленні продукту:', error)
-    res.status(500).json({
-      success: false,
-      error: 'Внутрішня помилка сервера'
-    })
+    next(error)
   }
 }
 
-// API: Повне оновлення продукту (PUT)
-export const replaceProductAPI = (req, res) => {
+export const deleteProductAPI = async (req, res, next) => {
   try {
-    const { id } = req.params
-    const newProductData = req.validatedProduct
+    const product = await ProductModel.findByIdAndDelete(req.params.id).lean()
 
-    logger.log(`API: Повна заміна продукту (PUT) з ID ${id}`)
-
-    const replacedProduct = replaceProduct(id, newProductData)
-
-    if (!replacedProduct) {
-      logger.log(`API: Продукт з ID ${id} не знайдено для заміни`)
-      return res.status(404).json({
-        success: false,
-        error: 'Продукт не знайдено'
-      })
+    if (!product) {
+      return res.status(404).json({ success: false, error: 'Продукт не знайдено' })
     }
 
-    logger.log('API: Продукт успішно оновлено (PUT)', replacedProduct)
-    res.status(200).json({
-      success: true,
-      data: replacedProduct,
-      message: 'Продукт успішно оновлено'
-    })
+    res.status(200).json({ success: true, data: product, message: 'Продукт успішно видалено' })
   } catch (error) {
-    logger.error('API: Помилка при PUT оновленні продукту:', error)
-    res.status(500).json({
-      success: false,
-      error: 'Внутрішня помилка сервера'
-    })
+    next(error)
   }
 }
 
 // ============ HTML WEB ENDPOINTS ============
 
-// Отримання списку продуктів
-export const getProducts = (req, res) => {
+export const getProducts = async (req, res, next) => {
   try {
-    logger.log('Отримання списку продуктів')
-    res.render('products', { products: getAllProducts() })
+    const products = await ProductModel.find().sort({ createdAt: -1 }).lean()
+    res.render('products', { products })
   } catch (error) {
-    logger.error('Помилка при отриманні списку продуктів:', error)
-    res.status(500).send('Внутрішня помилка сервера')
+    next(error)
   }
 }
 
-// Отримання одного продукту за ID
-export const getProduct = (req, res) => {
+export const getProduct = async (req, res, next) => {
   try {
-    const { id } = req.params
-    const product = getProductById(id)
+    const product = await ProductModel.findById(req.params.id).lean()
 
     if (!product) {
-      logger.log(`Продукт з ID ${id} не знайдено`)
       return res.status(404).render('404')
     }
 
-    logger.log(`Отримання продукту з ID ${id}`)
     res.render('product-detail', { product })
   } catch (error) {
-    logger.error('Помилка при отриманні продукту:', error)
-    res.status(500).send('Внутрішня помилка сервера')
+    next(error)
   }
 }
 
-// Відображення форми для нового продукту
 export const getNewProductForm = (req, res) => {
-  try {
-    logger.log('Відображення форми нового продукту')
-    res.render('product-form', {
-      product: { id: getNextId() },
-      isEdit: false
-    })
-  } catch (error) {
-    logger.error('Помилка при відображенні форми:', error)
-    res.status(500).send('Внутрішня помилка сервера')
-  }
+  res.render('product-form', { product: {}, isEdit: false })
 }
 
-// Відображення форми редагування продукту
-export const getEditProductForm = (req, res) => {
+export const getEditProductForm = async (req, res, next) => {
   try {
-    const { id } = req.params
-    const product = getProductById(id)
+    const product = await ProductModel.findById(req.params.id).lean()
 
     if (!product) {
-      logger.log(`Продукт з ID ${id} не знайдено для редагування`)
       return res.status(404).render('404')
     }
 
-    logger.log(`Відображення форми редагування продукту з ID ${id}`)
     res.render('product-form', { product, isEdit: true })
   } catch (error) {
-    logger.error('Помилка при відображенні форми редагування:', error)
-    res.status(500).send('Внутрішня помилка сервера')
+    next(error)
   }
 }
 
-// Створення нового продукту
-export const createProduct = (req, res) => {
+export const createProduct = async (req, res, next) => {
   try {
-    logger.log('Створення нового продукту')
+    await ProductModel.create({
+      name: String(req.body.name || '').trim(),
+      price: Number(req.body.price),
+      description: String(req.body.description || '').trim()
+    })
 
-    const { name, price, description } = req.body
-
-    // Автоматично генеруємо ID на сервері
-    const product = {
-      id: getNextId(),
-      name: String(name || '').trim(),
-      price: Number(price),
-      description: String(description || '').trim()
-    }
-
-    if (!validateProduct(product)) {
-      logger.log('Невірні дані продукту', product)
-      return res.status(400).render('product-form', {
-        product: { id: getNextId(), name, price, description },
-        isEdit: false,
-        error: 'Невірні дані продукту: перевірте всі поля'
-      })
-    }
-
-    addProduct(product)
-    logger.log('Продукт успішно створено', product)
-    res.status(201).redirect('/products')
+    res.redirect('/products')
   } catch (error) {
     logger.error('Помилка при створенні продукту:', error)
-    res.status(500).send('Внутрішня помилка сервера')
+    res.status(400).render('product-form', {
+      product: req.body,
+      isEdit: false,
+      error: 'Не вдалося створити продукт. Перевірте всі поля.'
+    })
   }
 }
 
-// Оновлення продукту
-export const updateProductHandler = (req, res) => {
+export const updateProductHandler = async (req, res, next) => {
   try {
-    const { id } = req.params
-    const { name, price, description } = req.body
+    const product = await ProductModel.findByIdAndUpdate(
+      req.params.id,
+      {
+        name: String(req.body.name || '').trim(),
+        price: Number(req.body.price),
+        description: String(req.body.description || '').trim()
+      },
+      { new: true, runValidators: true }
+    )
 
-    logger.log(`Оновлення продукту з ID ${id}`)
-
-    const updatedData = {
-      name: String(name).trim(),
-      price: Number(price),
-      description: String(description).trim()
-    }
-
-    // Валідація оновлених даних
-    const tempProduct = { id: Number(id), ...updatedData }
-    if (!validateProduct(tempProduct)) {
-      const product = getProductById(id)
-      logger.log('Невірні дані для оновлення продукту', updatedData)
-      return res.status(400).render('product-form', {
-        product: { ...product, ...updatedData },
-        isEdit: true,
-        error: 'Невірні дані продукту: перевірте всі поля'
-      })
-    }
-
-    const updatedProduct = updateProduct(id, updatedData)
-
-    if (!updatedProduct) {
-      logger.log(`Продукт з ID ${id} не знайдено для оновлення`)
+    if (!product) {
       return res.status(404).render('404')
     }
 
-    logger.log('Продукт успішно оновлено', updatedProduct)
     res.redirect('/products')
   } catch (error) {
     logger.error('Помилка при оновленні продукту:', error)
-    res.status(500).send('Внутрішня помилка сервера')
+    res.status(400).render('product-form', {
+      product: { ...req.body, id: req.params.id },
+      isEdit: true,
+      error: 'Не вдалося оновити продукт. Перевірте всі поля.'
+    })
   }
 }
 
-// Видалення продукту
-export const deleteProductHandler = (req, res) => {
+export const deleteProductHandler = async (req, res, next) => {
   try {
-    const { id } = req.params
-    logger.log(`Видалення продукту з ID ${id}`)
+    const product = await ProductModel.findByIdAndDelete(req.params.id)
 
-    const deletedProduct = deleteProduct(id)
-
-    if (!deletedProduct) {
-      logger.log(`Продукт з ID ${id} не знайдено для видалення`)
+    if (!product) {
       return res.status(404).render('404')
     }
 
-    logger.log('Продукт успішно видалено', deletedProduct)
     res.redirect('/products')
   } catch (error) {
-    logger.error('Помилка при видаленні продукту:', error)
-    res.status(500).send('Внутрішня помилка сервера')
+    next(error)
   }
 }
