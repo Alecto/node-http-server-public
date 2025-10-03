@@ -11,6 +11,50 @@ export const expressErrorHandler = (err, req, res, next) => {
     return next(err)
   }
 
+  // Обробка Mongoose duplicate key error (код 11000)
+  if (err.code === 11000) {
+    const field = Object.keys(err.keyPattern || {})[0] || 'поле'
+    const message = `Продукт з таким значенням ${field} вже існує`
+
+    if (req.path.startsWith('/api/')) {
+      return res.status(409).json({
+        success: false,
+        error: message
+      })
+    }
+
+    return res.status(409).render('500', { error: message })
+  }
+
+  // Обробка Mongoose validation error
+  if (err.name === 'ValidationError') {
+    const messages = Object.values(err.errors).map((e) => e.message)
+    const errorMessage = messages.join('. ')
+
+    if (req.path.startsWith('/api/')) {
+      return res.status(400).json({
+        success: false,
+        error: errorMessage
+      })
+    }
+
+    return res.status(400).render('500', { error: errorMessage })
+  }
+
+  // Обробка Mongoose CastError (невалідні типи даних)
+  if (err.name === 'CastError') {
+    const message = 'Невалідний формат даних'
+
+    if (req.path.startsWith('/api/')) {
+      return res.status(400).json({
+        success: false,
+        error: message
+      })
+    }
+
+    return res.status(400).render('500', { error: message })
+  }
+
   // Визначаємо тип відповіді на основі Accept header або Content-Type запиту
   const acceptsJSON = req.accepts(['html', 'json']) === 'json'
 
@@ -33,30 +77,6 @@ export const expressErrorHandler = (err, req, res, next) => {
   }
 }
 
-// Обробник помилок на рівні HTTP запитів (middleware)
-// Використовується в маршрутизаторі для обробки помилок, що виникають під час обробки HTTP запитів
-// Формує HTTP відповідь з кодом 500 для клієнта
-export const requestErrorHandler = (error, req, res) => {
-  logger.error('Необроблена помилка HTTP запиту:', error)
-
-  // Якщо відповідь ще не відправлена
-  if (!res.headersSent) {
-    res.statusCode = HTTP_STATUS.INTERNAL_SERVER_ERROR
-    res.setHeader('Content-Type', CONTENT_TYPE.TEXT)
-    res.end('Внутрішня помилка сервера')
-  }
-}
-
-// Обробник помилок для контролерів
-// Використовується всередині блоків catch у функціях контролерів
-// Дозволяє вказати конкретне повідомлення про помилку в логах
-export const handleControllerError = (error, res, message = 'Внутрішня помилка сервера') => {
-  logger.error(message, error)
-  res.statusCode = HTTP_STATUS.INTERNAL_SERVER_ERROR
-  res.setHeader('Content-Type', CONTENT_TYPE.TEXT)
-  res.end('Внутрішня помилка сервера')
-}
-
 // Налаштування глобальних обробників помилок для Node.js процесу
 // Ці обробники перехоплюють помилки на рівні всього додатку,
 // які не були перехоплені іншими try-catch блоками
@@ -64,10 +84,15 @@ export const setupGlobalErrorHandlers = () => {
   // Необроблені винятки в синхронному коді
   process.on('uncaughtException', (err) => {
     logger.error('Необроблений виняток у процесі Node.js:', err)
+    logger.error('Завершення процесу через критичну помилку')
+    process.exit(1)
   })
 
   // Необроблені відмови промісів (помилки в асинхронному коді)
-  process.on('unhandledRejection', (reason) => {
+  process.on('unhandledRejection', (reason, promise) => {
     logger.error('Необроблена відмова промісу у процесі Node.js:', reason)
+    logger.error('Promise:', promise)
+    logger.error('Завершення процесу через критичну помилку')
+    process.exit(1)
   })
 }
