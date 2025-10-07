@@ -6,15 +6,13 @@ const userSchema = new Schema(
       type: String,
       required: true,
       unique: true,
-      trim: true,
-      index: true
+      trim: true
     },
     email: {
       type: String,
       required: true,
       trim: true,
-      lowercase: true,
-      index: true
+      lowercase: true
     },
     name: {
       type: String,
@@ -45,11 +43,8 @@ const userSchema = new Schema(
   }
 )
 
-// Індекс для швидкого пошуку за email
-userSchema.index({ email: 1 })
-
-// Індекс для auth0Id (унікальний)
-userSchema.index({ auth0Id: 1 }, { unique: true })
+// Примітка: Індекси вже визначені в полях схеми через unique: true
+// Не потрібно додавати дублюючі індекси через schema.index()
 
 // Метод для оновлення останнього входу
 userSchema.methods.updateLastLogin = function () {

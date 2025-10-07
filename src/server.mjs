@@ -69,15 +69,34 @@ app.use(async (req, res, next) => {
             auth0Id: newUser.auth0Id
           })
         } else {
+          // Завжди оновлюємо дані з Auth0 для актуальності
+          let needsUpdate = false
+
+          if (existingUser.email !== auth0User.email) {
+            existingUser.email = auth0User.email
+            needsUpdate = true
+          }
+
+          if (existingUser.name !== (auth0User.name || auth0User.email)) {
+            existingUser.name = auth0User.name || auth0User.email
+            needsUpdate = true
+          }
+
+          if (existingUser.picture !== auth0User.picture) {
+            existingUser.picture = auth0User.picture
+            needsUpdate = true
+          }
+
           // Оновлюємо lastLogin якщо пройшло більше 5 хвилин
           const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000)
           if (!existingUser.lastLogin || existingUser.lastLogin < fiveMinutesAgo) {
             existingUser.lastLogin = new Date()
-            existingUser.email = auth0User.email
-            existingUser.name = auth0User.name || auth0User.email
-            existingUser.picture = auth0User.picture
+            needsUpdate = true
+          }
+
+          if (needsUpdate) {
             await existingUser.save()
-            logger.debug('Користувач оновлено', { userId: existingUser._id })
+            logger.debug('Дані користувача оновлено', { userId: existingUser._id })
           }
         }
       }
@@ -95,9 +114,34 @@ app.use((req, res, next) => {
 })
 
 // Додаємо інформацію про користувача в локальні змінні для EJS
-app.use((req, res, next) => {
-  res.locals.user = req.oidc?.user || null
-  res.locals.isAuthenticated = req.oidc?.isAuthenticated() || false
+app.use(async (req, res, next) => {
+  try {
+    if (req.oidc && req.oidc.isAuthenticated && req.oidc.isAuthenticated()) {
+      const auth0User = req.oidc.user
+      // Отримуємо користувача з MongoDB для повної інформації (включно з picture)
+      const dbUser = await UserModel.findOne({ auth0Id: auth0User.sub }).lean()
+
+      if (dbUser) {
+        res.locals.user = dbUser
+        res.locals.isAuthenticated = true
+      } else {
+        // Якщо користувач ще не в БД, використовуємо дані Auth0
+        res.locals.user = auth0User
+        res.locals.isAuthenticated = true
+        logger.warn('Користувач не знайдений в БД, використовуємо Auth0 дані', {
+          auth0Id: auth0User.sub
+        })
+      }
+    } else {
+      res.locals.user = null
+      res.locals.isAuthenticated = false
+    }
+  } catch (error) {
+    logger.error('Помилка отримання даних користувача для EJS:', error)
+    res.locals.user = req.oidc?.user || null
+    res.locals.isAuthenticated = req.oidc?.isAuthenticated() || false
+  }
+
   next()
 })
 

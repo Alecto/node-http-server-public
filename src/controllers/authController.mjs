@@ -3,68 +3,6 @@ import { generateJWT } from '../middleware/auth.mjs'
 import * as logger from '../utils/logger.mjs'
 
 /**
- * Обробка callback від Auth0 після успішної автентифікації
- * Зберігаємо/оновлюємо користувача в MongoDB
- */
-export const handleAuthCallback = async (req, res, next) => {
-  try {
-    // Отримуємо інформацію про користувача від Auth0
-    const { user: auth0User } = req.oidc
-
-    if (!auth0User) {
-      logger.error('Auth0 callback: користувач відсутній в req.oidc')
-      return res.redirect('/')
-    }
-
-    logger.info('Auth0 callback отримано', {
-      auth0Id: auth0User.sub,
-      email: auth0User.email
-    })
-
-    // Шукаємо користувача за auth0Id
-    let user = await UserModel.findOne({ auth0Id: auth0User.sub })
-
-    if (user) {
-      // Користувач існує - оновлюємо інформацію
-      user.email = auth0User.email
-      user.name = auth0User.name || auth0User.email
-      user.picture = auth0User.picture
-      user.lastLogin = new Date()
-
-      // Визначаємо провайдера з auth0Id (формат: "provider|id")
-      const providerMatch = auth0User.sub.match(/^([^|]+)\|/)
-      if (providerMatch) {
-        user.provider = providerMatch[1]
-      }
-
-      await user.save()
-      logger.info('Користувач оновлено', { userId: user._id, email: user.email })
-    } else {
-      // Новий користувач - створюємо запис
-      const providerMatch = auth0User.sub.match(/^([^|]+)\|/)
-      const provider = providerMatch ? providerMatch[1] : 'auth0'
-
-      user = await UserModel.create({
-        auth0Id: auth0User.sub,
-        email: auth0User.email,
-        name: auth0User.name || auth0User.email,
-        picture: auth0User.picture,
-        provider,
-        lastLogin: new Date()
-      })
-
-      logger.info('Новий користувач створено', { userId: user._id, email: user.email })
-    }
-
-    // Редиректимо на головну сторінку
-    res.redirect('/')
-  } catch (error) {
-    logger.error('Помилка в handleAuthCallback:', error)
-    next(error)
-  }
-}
-
-/**
  * Отримання профілю поточного користувача
  */
 export const getCurrentUser = async (req, res, next) => {

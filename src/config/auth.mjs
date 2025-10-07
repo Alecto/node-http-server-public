@@ -42,24 +42,28 @@ export const SESSION_CONFIG = {
 }
 
 // Auth0 OpenID Connect конфігурація
-export const getAuth0Config = () => ({
-  authRequired: false, // Не всі роути вимагають автентифікації
-  auth0Logout: true,
-  secret: AUTH0_CONFIG.SECRET,
-  baseURL: AUTH0_CONFIG.BASE_URL,
-  clientID: AUTH0_CONFIG.CLIENT_ID,
-  issuerBaseURL: AUTH0_CONFIG.ISSUER_BASE_URL,
-  clientSecret: AUTH0_CONFIG.CLIENT_SECRET,
-  authorizationParams: {
-    response_type: 'code',
-    scope: 'openid profile email'
-  },
-  routes: {
-    login: '/auth/login',
-    logout: '/auth/logout',
-    callback: '/auth/callback'
+export const getAuth0Config = () => {
+  return {
+    authRequired: false, // Не всі роути вимагають автентифікації
+    auth0Logout: true,
+    secret: AUTH0_CONFIG.SECRET,
+    baseURL: AUTH0_CONFIG.BASE_URL,
+    clientID: AUTH0_CONFIG.CLIENT_ID,
+    issuerBaseURL: AUTH0_CONFIG.ISSUER_BASE_URL,
+    clientSecret: AUTH0_CONFIG.CLIENT_SECRET,
+    authorizationParams: {
+      response_type: 'code',
+      scope: 'openid profile email'
+    },
+    routes: {
+      login: '/auth/login',
+      logout: '/auth/logout',
+      callback: '/auth/callback'
+    }
+    // Примітка: express-openid-connect використовує власні налаштування session
+    // і не дозволяє перевизначати session.cookie напряму
   }
-})
+}
 
 // Перевірка наявності обов'язкових змінних
 export const validateAuthConfig = () => {
@@ -69,6 +73,7 @@ export const validateAuthConfig = () => {
 
   const errors = []
   const warnings = []
+  const isProduction = process.env.NODE_ENV === 'production'
 
   if (!AUTH0_CONFIG.ISSUER_BASE_URL) {
     errors.push('AUTH0_ISSUER_BASE_URL не налаштовано')
@@ -82,16 +87,44 @@ export const validateAuthConfig = () => {
     errors.push('AUTH0_CLIENT_SECRET не налаштовано')
   }
 
-  if (AUTH0_CONFIG.SECRET === 'default-secret-change-in-production') {
-    warnings.push('AUTH0_SECRET використовує значення за замовчуванням')
-  }
+  // Критичні перевірки для продакшну
+  if (isProduction) {
+    if (AUTH0_CONFIG.SECRET === 'default-secret-change-in-production') {
+      errors.push('AUTH0_SECRET повинен бути змінений для продакшну')
+    }
 
-  if (JWT_CONFIG.SECRET === 'jwt-secret-change-in-production') {
-    warnings.push('JWT_SECRET використовує значення за замовчуванням')
-  }
+    if (AUTH0_CONFIG.SECRET.length < 32) {
+      errors.push('AUTH0_SECRET повинен містити мінімум 32 символи')
+    }
 
-  if (SESSION_CONFIG.SECRET === 'session-secret-change-in-production') {
-    warnings.push('SESSION_SECRET використовує значення за замовчуванням')
+    if (JWT_CONFIG.SECRET === 'jwt-secret-change-in-production') {
+      errors.push('JWT_SECRET повинен бути змінений для продакшну')
+    }
+
+    if (JWT_CONFIG.SECRET.length < 32) {
+      errors.push('JWT_SECRET повинен містити мінімум 32 символи')
+    }
+
+    if (SESSION_CONFIG.SECRET === 'session-secret-change-in-production') {
+      errors.push('SESSION_SECRET повинен бути змінений для продакшну')
+    }
+
+    if (!AUTH0_CONFIG.BASE_URL.startsWith('https://')) {
+      errors.push('AUTH0_BASE_URL повинен використовувати HTTPS в продакшні')
+    }
+  } else {
+    // Попередження для розробки
+    if (AUTH0_CONFIG.SECRET === 'default-secret-change-in-production') {
+      warnings.push('AUTH0_SECRET використовує значення за замовчуванням')
+    }
+
+    if (JWT_CONFIG.SECRET === 'jwt-secret-change-in-production') {
+      warnings.push('JWT_SECRET використовує значення за замовчуванням')
+    }
+
+    if (SESSION_CONFIG.SECRET === 'session-secret-change-in-production') {
+      warnings.push('SESSION_SECRET використовує значення за замовчуванням')
+    }
   }
 
   return {
