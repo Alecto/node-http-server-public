@@ -14,20 +14,94 @@
 
       <h1>Вітаємо в інтернет-магазині!</h1>
 
-      <p>Це Express.js HTTP сервер для управління каталогом продуктів з повними CRUD операціями.</p>
+      <div class='content-with-sidebar'>
+        <div class='main-content'>
+          <p>Це Express.js HTTP сервер для управління каталогом продуктів з повними CRUD операціями.</p>
 
-      <h2>Можливості:</h2>
-      <ul>
-        <li>Перегляд списку продуктів</li>
-        <li>Додавання нових продуктів</li>
-        <li>Редагування існуючих продуктів</li>
-        <li>Видалення продуктів</li>
-        <li>Простий та зручний інтерфейс</li>
-      </ul>
+          <h2>Основні можливості:</h2>
+          <div class='features-grid'>
+            <div class='feature-card'>
+              <div class='feature-card-icon'>👁️</div>
+              <h3>Перегляд каталогу</h3>
+              <p>Доступний всім відвідувачам без реєстрації</p>
+            </div>
 
-      <div>
-        <a href='/products' class='btn'>Переглянути продукти</a>
-        <a href='/products/new' class='btn btn-success'>Додати продукт</a>
+            <% if (isAuthenticated) { %>
+              <div class='feature-card active'>
+                <div class='feature-card-icon'>➕</div>
+                <h3>Додавання</h3>
+                <p>Створюйте нові продукти в каталозі</p>
+              </div>
+
+              <div class='feature-card active'>
+                <div class='feature-card-icon'>✏️</div>
+                <h3>Редагування</h3>
+                <p>Змінюйте дані існуючих продуктів</p>
+              </div>
+
+              <div class='feature-card active'>
+                <div class='feature-card-icon'>🗑️</div>
+                <h3>Видалення</h3>
+                <p>Видаляйте продукти з каталогу</p>
+              </div>
+              <% } else { %>
+                <div class='feature-card locked'>
+                  <div class='feature-card-icon'>🔒</div>
+                  <h3>CRUD операції</h3>
+                  <p>Додавання, редагування та видалення доступні після авторизації</p>
+                </div>
+                <% } %>
+          </div>
+
+          <div style='margin-top: 30px;'>
+            <a href='/products' class='btn btn-lg'>Переглянути каталог продуктів</a>
+            <% if (isAuthenticated) { %>
+              <a href='/products/new' class='btn btn-success btn-lg'>Додати продукт</a>
+              <% } %>
+          </div>
+        </div>
+
+        <aside class='sidebar'>
+          <div class='auth-sidebar-card info'>
+            <h3>ℹ️ Про демонстраційний режим</h3>
+
+            <div class='info-section'>
+              <h4>👥 Публічний доступ</h4>
+              <p>Всі відвідувачі можуть переглядати каталог продуктів та їх деталі.</p>
+            </div>
+
+            <div class='info-section'>
+              <h4>🔐 Авторизований доступ</h4>
+              <p>Повне управління продуктами (CRUD) доступне після входу через Auth0.</p>
+
+              <div class='auth-methods'>
+                <p class='auth-methods-title'>Методи входу:</p>
+                <div class='auth-method'>
+                  <span class='auth-icon'>🔵</span>
+                  <span>Google Account</span>
+                </div>
+                <div class='auth-method'>
+                  <span class='auth-icon'>⚫</span>
+                  <span>GitHub Account</span>
+                </div>
+              </div>
+            </div>
+
+            <div class='warning-box'>
+              <p><strong>⚠️ Важливо:</strong></p>
+              <p>Це демонстраційний застосунок для навчальних цілей. Всі зміни є тимчасовими.</p>
+            </div>
+
+            <% if (!isAuthenticated) { %>
+              <a href='/auth/login' class='btn btn-primary btn-block'>Увійти через Auth0</a>
+              <% } else { %>
+                <div class='user-actions'>
+                  <a href='/auth/profile' class='btn btn-info btn-block'>👤 Мій профіль</a>
+                  <a href='/auth/logout' class='btn btn-block'>Вийти</a>
+                </div>
+                <% } %>
+          </div>
+        </aside>
       </div>
   </div>
 </body>
