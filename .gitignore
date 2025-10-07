@@ -17,3 +17,5 @@ build/
 .env
 .env*
 
+# Personal notes (not for repo)
+GIT-COMMANDS.md
