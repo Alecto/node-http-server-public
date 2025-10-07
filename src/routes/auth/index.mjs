@@ -7,6 +7,7 @@ import {
   getAllUsers
 } from '../../controllers/authController.mjs'
 import { requireAuth, verifyJWT, optionalJWT } from '../../middleware/auth.mjs'
+import { AUTH0_CONFIG } from '../../config/auth.mjs'
 
 const router = Router()
 
@@ -19,8 +20,146 @@ const router = Router()
  * Ми додаємо тільки власні обробники для callback
  */
 
-// Callback обробник для збереження користувача в БД
-router.get('/callback', handleAuthCallback)
+// Fallback маршрути, якщо Auth0 вимкнено
+if (!AUTH0_CONFIG.ENABLED) {
+  router.get('/login', (req, res) => {
+    res.status(503).send(`
+      <!DOCTYPE html>
+      <html lang="uk">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Auth0 не налаштовано</title>
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+          }
+          .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 500px;
+            text-align: center;
+          }
+          h1 {
+            color: #333;
+            margin-bottom: 20px;
+          }
+          p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+          }
+          .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+          }
+          .steps {
+            text-align: left;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+          }
+          .steps ol {
+            margin: 10px 0;
+            padding-left: 20px;
+          }
+          .steps li {
+            margin: 10px 0;
+          }
+          code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+          }
+          a {
+            color: #667eea;
+            text-decoration: none;
+          }
+          a:hover {
+            text-decoration: underline;
+          }
+          .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background 0.3s;
+          }
+          .btn:hover {
+            background: #5568d3;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>⚠️ Auth0 не налаштовано</h1>
+          
+          <div class="warning">
+            <strong>Автентифікація вимкнена</strong><br>
+            Auth0 не налаштовано в змінних середовища
+          </div>
+          
+          <p>
+            Щоб увімкнути автентифікацію через Auth0, виконайте наступні кроки:
+          </p>
+          
+          <div class="steps">
+            <ol>
+              <li>Зареєструйтеся на <a href="https://auth0.com" target="_blank">Auth0.com</a></li>
+              <li>Створіть новий Application (Regular Web Application)</li>
+              <li>Налаштуйте Callback URLs: <code>http://localhost:3000/auth/callback</code></li>
+              <li>Налаштуйте Logout URLs: <code>http://localhost:3000</code></li>
+              <li>Оновіть файл <code>.env</code>:
+                <ul style="list-style: none; padding-left: 0; margin-top: 10px;">
+                  <li><code>AUTH0_ENABLED=true</code></li>
+                  <li><code>AUTH0_ISSUER_BASE_URL=https://YOUR_DOMAIN.auth0.com</code></li>
+                  <li><code>AUTH0_CLIENT_ID=your_client_id</code></li>
+                  <li><code>AUTH0_CLIENT_SECRET=your_client_secret</code></li>
+                </ul>
+              </li>
+              <li>Перезапустіть сервер</li>
+            </ol>
+          </div>
+          
+          <a href="/" class="btn">Повернутися на головну</a>
+        </div>
+      </body>
+      </html>
+    `)
+  })
+
+  router.get('/logout', (req, res) => {
+    res.redirect('/')
+  })
+
+  router.get('/callback', (req, res) => {
+    res.redirect('/auth/login')
+  })
+}
+
+// Callback обробник для збереження користувача в БД (тільки якщо Auth0 увімкнено)
+if (AUTH0_CONFIG.ENABLED) {
+  router.get('/callback', handleAuthCallback)
+}
 
 // Профіль користувача (веб-сторінка)
 router.get('/profile', requireAuth, showProfile)
