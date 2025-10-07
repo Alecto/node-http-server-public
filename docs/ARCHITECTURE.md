@@ -41,14 +41,23 @@ node-http-server/
 │   ├── utils/
 │   │   └── logger.mjs
 │   ├── views/
-│   │   ├── 404.ejs
-│   │   ├── 500.ejs
-│   │   ├── index.ejs
-│   │   ├── navigation.ejs
-│   │   ├── product-detail.ejs
-│   │   ├── product-form.ejs
-│   │   ├── products.ejs
-│   │   └── styles.ejs
+│   │   ├── partials/
+│   │   │   ├── auth-sidebar.ejs
+│   │   │   ├── head.ejs
+│   │   │   ├── navigation.ejs
+│   │   │   └── styles.ejs
+│   │   ├── pages/
+│   │   │   └── index.ejs
+│   │   ├── products/
+│   │   │   ├── detail.ejs
+│   │   │   ├── form.ejs
+│   │   │   └── list.ejs
+│   │   ├── auth/
+│   │   │   ├── disabled.ejs
+│   │   │   └── profile.ejs
+│   │   └── errors/
+│   │       ├── 404.ejs
+│   │       └── 500.ejs
 │   └── server.mjs
 ├── tests/
 │   └── runTests.mjs
