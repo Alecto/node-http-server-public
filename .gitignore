@@ -14,3 +14,4 @@ build/
 
 # Environment variables
 .env
+.env*
