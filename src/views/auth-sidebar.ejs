@@ -1,0 +1,66 @@
+<aside class='sidebar'>
+  <% if (!isAuthenticated) { %>
+    <div class='auth-sidebar-card'>
+      <h3>🔐 Авторизація</h3>
+      <p>Щоб отримати повний доступ до управління продуктами, увійдіть через Auth0.</p>
+
+      <div class='feature-list'>
+        <div class='feature-item'>
+          <span class='feature-icon'>➕</span>
+          <span>Додавання нових продуктів</span>
+        </div>
+        <div class='feature-item'>
+          <span class='feature-icon'>✏️</span>
+          <span>Редагування продуктів</span>
+        </div>
+        <div class='feature-item'>
+          <span class='feature-icon'>🗑️</span>
+          <span>Видалення продуктів</span>
+        </div>
+      </div>
+
+      <div class='auth-methods'>
+        <p class='auth-methods-title'>Доступні методи входу:</p>
+        <div class='auth-method'>
+          <span class='auth-icon'>🔵</span>
+          <span>Google Account</span>
+        </div>
+        <div class='auth-method'>
+          <span class='auth-icon'>⚫</span>
+          <span>GitHub Account</span>
+        </div>
+      </div>
+
+      <a href='/auth/login' class='btn btn-primary btn-block'>Увійти через Auth0</a>
+
+      <p class='sidebar-note'>
+        <small>💡 Це демонстраційний застосунок. Всі зміни є тимчасовими.</small>
+      </p>
+    </div>
+    <% } else { %>
+      <div class='auth-sidebar-card success'>
+        <h3>✅ Повний доступ</h3>
+        <p>Ви увійшли в систему і маєте доступ до всіх функцій управління продуктами.</p>
+
+        <div class='feature-list'>
+          <div class='feature-item'>
+            <span class='feature-icon'>➕</span>
+            <span>Додавання нових продуктів</span>
+          </div>
+          <div class='feature-item'>
+            <span class='feature-icon'>✏️</span>
+            <span>Редагування існуючих</span>
+          </div>
+          <div class='feature-item'>
+            <span class='feature-icon'>🗑️</span>
+            <span>Видалення продуктів</span>
+          </div>
+        </div>
+
+        <div class='user-actions'>
+          <a href='/products/new' class='btn btn-success btn-block'>➕ Додати продукт</a>
+          <a href='/auth/profile' class='btn btn-info btn-block'>👤 Мій профіль</a>
+        </div>
+      </div>
+      <% } %>
+</aside>
