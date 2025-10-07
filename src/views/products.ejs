@@ -14,43 +14,53 @@
 
       <h1>Каталог продуктів</h1>
 
-      <p>
-        <strong>Всього в базі:</strong>
-        <%= typeof total==='number' ? total : products.length %>
-      </p>
+      <div class='content-with-sidebar'>
+        <div class='main-content'>
+          <p>
+            <strong>Всього в базі:</strong>
+            <%= typeof total==='number' ? total : products.length %>
+          </p>
 
-      <% if (Array.isArray(products) && products.length> 0) { %>
-        <% products.forEach(function(product) { %>
-          <div class='product'>
-            <h3>
-              <%= product.name %>
-            </h3>
-            <p class='price'>$<%= product.price %>
-            </p>
-            <p>
-              <%= product.description %>
-            </p>
-            <small>ID: <%= product.id || product._id || '' %></small>
-            <div class='product-actions'>
-              <a href='/products/<%= product.id || product._id || '' %>' class='btn'>Переглянути</a>
-              <a href='/products/<%= product.id || product._id || '' %>/edit' class='btn btn-warning'>Редагувати</a>
-              <form action='/products/<%= product.id || product._id || '' %>?_method=DELETE' method='post' style='display: inline;' onsubmit='return confirm("Ви впевнені, що хочете видалити цей продукт?")'>
-                <button type='submit' class='btn btn-danger'>Видалити</button>
-              </form>
-            </div>
-          </div>
-          <% }); %>
-
-            <p><strong>Всього продуктів:</strong>
-              <%= products.length %>
-            </p>
-            <% } else { %>
-              <p>Поки що немає продуктів в каталозі.</p>
-              <% } %>
-
-                <div>
-                  <a href='/products/new' class='btn btn-success'>Додати новий продукт</a>
+          <% if (Array.isArray(products) && products.length> 0) { %>
+            <% products.forEach(function(product) { %>
+              <div class='product'>
+                <h3>
+                  <%= product.name %>
+                </h3>
+                <p class='price'>$<%= product.price %>
+                </p>
+                <p>
+                  <%= product.description %>
+                </p>
+                <small>ID: <%= product.id || product._id || '' %></small>
+                <div class='product-actions'>
+                  <a href='/products/<%= product.id || product._id || '' %>' class='btn'>Переглянути</a>
+                  <% if (isAuthenticated) { %>
+                    <a href='/products/<%= product.id || product._id || '' %>/edit' class='btn btn-warning'>Редагувати</a>
+                    <form action='/products/<%= product.id || product._id || '' %>?_method=DELETE' method='post' style='display: inline;' onsubmit='return confirm("Ви впевнені, що хочете видалити цей продукт?")'>
+                      <button type='submit' class='btn btn-danger'>Видалити</button>
+                    </form>
+                    <% } %>
                 </div>
+              </div>
+              <% }); %>
+
+                <p><strong>Всього продуктів:</strong>
+                  <%= products.length %>
+                </p>
+                <% } else { %>
+                  <p>Поки що немає продуктів в каталозі.</p>
+                  <% } %>
+
+                    <% if (isAuthenticated) { %>
+                      <div style='margin-top: 20px;'>
+                        <a href='/products/new' class='btn btn-success'>Додати новий продукт</a>
+                      </div>
+                      <% } %>
+        </div>
+
+        <%- include('auth-sidebar') %>
+      </div>
   </div>
 </body>
 
