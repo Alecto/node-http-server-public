@@ -9,15 +9,26 @@ import {
   deleteProductHandler
 } from '../../controllers/productController.mjs'
 import { validateObjectIdParam } from '../../middleware/validation.mjs'
+import { requireAuth } from '../../middleware/auth.mjs'
 
 const router = Router()
 
-router.route('/').get(getProducts).post(createProduct)
+// Перегляд списку продуктів - публічний доступ
+router.route('/').get(getProducts).post(requireAuth, createProduct)
 
-router.route('/new').get(getNewProductForm)
+// Форма створення нового продукту - тільки для авторизованих
+router.route('/new').get(requireAuth, getNewProductForm)
 
-router.route('/:id').all(validateObjectIdParam()).get(getProduct).put(updateProductHandler).delete(deleteProductHandler)
+// Перегляд окремого продукту - публічний доступ
+// Редагування та видалення - тільки для авторизованих
+router
+  .route('/:id')
+  .all(validateObjectIdParam())
+  .get(getProduct)
+  .put(requireAuth, updateProductHandler)
+  .delete(requireAuth, deleteProductHandler)
 
-router.route('/:id/edit').all(validateObjectIdParam()).get(getEditProductForm)
+// Форма редагування продукту - тільки для авторизованих
+router.route('/:id/edit').all(validateObjectIdParam()).get(requireAuth, getEditProductForm)
 
 export default router

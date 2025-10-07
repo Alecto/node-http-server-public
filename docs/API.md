@@ -12,9 +12,34 @@ http://localhost:3000
 
 **Base URL for API:** `/api/`
 
-### Authentication
+### 🔐 Authentication
 
-Немає (навчальний проект). Atlas URI зберігається в `.env`.
+API використовує **JWT токени** для автентифікації захищених ендпоінтів.
+
+**Отримання токена:**
+
+1. Авторизуйтесь через веб-інтерфейс: `GET /auth/login`
+2. Отримайте JWT токен: `GET /auth/api/token`
+
+**Використання токена:**
+
+```bash
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+```
+
+**Публічні ендпоінти** (без токена):
+
+- `GET /api/products` - список продуктів
+- `GET /api/products/:id` - деталі продукту
+
+**Захищені ендпоінти** (потрібен JWT):
+
+- `POST /api/products` - створення
+- `PUT /api/products/:id` - повне оновлення
+- `PATCH /api/products/:id` - часткове оновлення
+- `DELETE /api/products/:id` - видалення
+
+Детальніше: [AUTHENTICATION.md](AUTHENTICATION.md)
 
 ### Content-Type
 
@@ -86,7 +111,14 @@ http://localhost:3000
 
 ### ➕ POST /api/products
 
-Створити новий продукт.
+Створити новий продукт. **🔒 Потрібен JWT токен**
+
+**Headers:**
+
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+```
 
 **Request Body:**
 
@@ -117,7 +149,14 @@ http://localhost:3000
 
 ### ✏️ PUT /api/products/:id
 
-Повністю замінити продукт (всі поля обовʼязкові).
+Повністю замінити продукт (всі поля обовʼязкові). **🔒 Потрібен JWT токен**
+
+**Headers:**
+
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+```
 
 **Response 200:**
 
@@ -138,7 +177,14 @@ http://localhost:3000
 
 ### ♻️ PATCH /api/products/:id
 
-Частково оновити продукт.
+Частково оновити продукт. **🔒 Потрібен JWT токен**
+
+**Headers:**
+
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+```
 
 **Response 200:**
 
@@ -159,7 +205,13 @@ http://localhost:3000
 
 ### 🗑️ DELETE /api/products/:id
 
-Видалити продукт за ObjectId.
+Видалити продукт за ObjectId. **🔒 Потрібен JWT токен**
+
+**Headers:**
+
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+```
 
 **Response 200:**
 
@@ -187,6 +239,7 @@ http://localhost:3000
 | 200  | OK                                         |
 | 201  | Created                                    |
 | 400  | Bad Request (валидація / ObjectId)         |
+| 401  | Unauthorized (відсутній/невірний токен)    |
 | 404  | Not Found                                  |
 | 409  | Conflict (дублікат за унікальним індексом) |
 | 500  | Internal Server Error                      |
@@ -195,15 +248,64 @@ http://localhost:3000
 
 ## 🧪 Testing Examples
 
-```bash
-# Отримати всі продукти (MongoDB Atlas)
-yarn node scripts/checkServer.mjs   # комплексна перевірка
+### Публічні запити (без автентифікації)
 
-# Або базові cURL
+```bash
+# Отримати всі продукти
 curl -X GET http://localhost:3000/api/products
+
+# Отримати продукт за ID
+curl -X GET http://localhost:3000/api/products/PRODUCT_ID
+```
+
+### Захищені запити (з JWT токеном)
+
+```bash
+# 1. Спочатку отримайте JWT токен через веб-інтерфейс
+# Відкрийте http://localhost:3000/auth/login та увійдіть
+# Потім отримайте токен:
+curl -X GET http://localhost:3000/auth/api/token
+
+# 2. Використовуйте токен для API запитів
+export JWT_TOKEN="your_jwt_token_here"
+
+# Створити продукт
+curl -X POST http://localhost:3000/api/products \
+  -H "Authorization: Bearer $JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test Product","price":99.99,"description":"Test description"}'
+
+# Оновити продукт
+curl -X PUT http://localhost:3000/api/products/PRODUCT_ID \
+  -H "Authorization: Bearer $JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Updated Product","price":149.99,"description":"Updated description"}'
+
+# Частково оновити продукт
+curl -X PATCH http://localhost:3000/api/products/PRODUCT_ID \
+  -H "Authorization: Bearer $JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"price":199.99}'
+
+# Видалити продукт
+curl -X DELETE http://localhost:3000/api/products/PRODUCT_ID \
+  -H "Authorization: Bearer $JWT_TOKEN"
+```
+
+### Помилки автентифікації
+
+```bash
+# Спроба створити продукт без токена
 curl -X POST http://localhost:3000/api/products \
   -H "Content-Type: application/json" \
   -d '{"name":"Test","price":99.99,"description":"desc"}'
+
+# Response 401:
+# {
+#   "success": false,
+#   "error": "Токен відсутній",
+#   "message": "Необхідно надати JWT токен в Authorization header"
+# }
 ```
 
-> Повний сценарій тестування описано в `docs/TESTING.md`.
+> Повний сценарій тестування описано в `docs/TESTING.md` та `docs/AUTHENTICATION.md`.

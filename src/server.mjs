@@ -2,12 +2,16 @@ import express from 'express'
 import methodOverride from 'method-override'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { auth } from 'express-openid-connect'
 import { SERVER_CONFIG } from './config/index.mjs'
+import { getAuth0Config, validateAuthConfig, AUTH0_CONFIG } from './config/auth.mjs'
 import { connectToDatabase, disconnectFromDatabase } from './database/connection.mjs'
 import { ProductModel } from './models/products.mjs'
+import { UserModel } from './models/user.mjs'
 import { setupGlobalErrorHandlers, expressErrorHandler } from './middleware/errorHandlers.mjs'
 import apiRouter from './routes/api/index.mjs'
 import webRouter from './routes/web/index.mjs'
+import authRouter from './routes/auth/index.mjs'
 import * as logger from './utils/logger.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -25,11 +29,28 @@ app.use(express.json())
 app.use(methodOverride('_method'))
 app.use(express.static(path.join(__dirname, 'public')))
 
+// Auth0 middleware (якщо увімкнено)
+if (AUTH0_CONFIG.ENABLED) {
+  const authConfig = getAuth0Config()
+  app.use(auth(authConfig))
+  logger.info('Auth0 middleware увімкнено')
+} else {
+  logger.warn('Auth0 middleware вимкнено')
+}
+
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.url}`)
   next()
 })
 
+// Додаємо інформацію про користувача в локальні змінні для EJS
+app.use((req, res, next) => {
+  res.locals.user = req.oidc?.user || null
+  res.locals.isAuthenticated = req.oidc?.isAuthenticated() || false
+  next()
+})
+
+app.use('/auth', authRouter)
 app.use('/api', apiRouter)
 app.use('/', webRouter)
 
@@ -53,7 +74,20 @@ export const startServer = async (options = {}) => {
     throw new Error('Не вдалося встановити підключення до MongoDB')
   }
 
+  // Валідація Auth0 конфігурації
+  const authValidation = validateAuthConfig()
+  if (!authValidation.valid) {
+    logger.error('Помилки конфігурації Auth0:', authValidation.errors)
+    throw new Error('Некоректна конфігурація Auth0')
+  }
+  if (authValidation.warnings?.length > 0) {
+    authValidation.warnings.forEach((warning) => logger.warn(`Auth0: ${warning}`))
+  }
+
+  // Синхронізація індексів для моделей
   await ProductModel.syncIndexes()
+  await UserModel.syncIndexes()
+  logger.info('MongoDB індекси синхронізовано')
 
   if (!serverInstance) {
     serverInstance = app.listen(SERVER_CONFIG.PORT, SERVER_CONFIG.HOST, () => {
