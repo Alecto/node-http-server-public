@@ -11,7 +11,7 @@ const router = Router()
  * - GET /auth/logout - вихід з системи
  * - GET /auth/callback - callback після автентифікації
  *
- * Збереження користувача в БД відбувається через afterCallback hook (див. server.mjs)
+ * Збереження користувача в БД відбувається через middleware в server.mjs
  */
 
 // Fallback маршрути, якщо Auth0 вимкнено

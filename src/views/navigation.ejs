@@ -6,7 +6,7 @@
     <a href='/products/new' class='btn btn-success'>Додати продукт</a>
     <div class='auth-section'>
       <% if (user.picture) { %>
-        <img src='<%= user.picture %>' alt='Avatar' class='user-avatar'>
+        <img src='<%= user.picture %>' alt='Avatar' class='user-avatar' referrerpolicy='no-referrer' crossorigin='anonymous'>
         <% } %>
           <span class='user-name'>
             <%= user.name || user.email %>
