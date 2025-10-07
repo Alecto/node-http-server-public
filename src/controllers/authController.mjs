@@ -1,5 +1,6 @@
 import { UserModel } from '../models/user.mjs'
 import { generateJWT } from '../middleware/auth.mjs'
+import { JWT_CONFIG } from '../config/auth.mjs'
 import * as logger from '../utils/logger.mjs'
 
 /**
@@ -85,7 +86,7 @@ export const generateAPIToken = async (req, res, next) => {
       success: true,
       data: {
         token,
-        expiresIn: '7d',
+        expiresIn: JWT_CONFIG.EXPIRES_IN,
         tokenType: 'Bearer'
       },
       message: 'JWT токен успішно згенеровано'

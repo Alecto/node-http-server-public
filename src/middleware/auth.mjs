@@ -41,6 +41,21 @@ export const optionalAuth = (req, res, next) => {
 /**
  * Middleware для перевірки JWT токена (для API роутів)
  * Очікує токен в Authorization header: "Bearer <token>"
+ *
+ * ВАЖЛИВО: Це верифікація ВЛАСНИХ JWT токенів, а не токенів Auth0!
+ *
+ * Архітектура Hybrid Auth:
+ * - Auth0 використовується тільки для початкового входу через OAuth
+ * - Після входу генеруються власні JWT токени для API
+ * - Токени підписуються нашим JWT_SECRET (не Auth0 секретом)
+ *
+ * Переваги цього підходу:
+ * - Незалежність від Auth0 API limits
+ * - Повний контроль над payload токенів
+ * - Швидка локальна верифікація без зовнішніх запитів
+ * - Гнучкість у зміні OAuth провайдера
+ *
+ * @see docs/AUTHENTICATION.md для детальної інформації про архітектуру
  */
 export const verifyJWT = (req, res, next) => {
   const authHeader = req.headers.authorization
@@ -188,7 +203,25 @@ export const optionalJWT = (req, res, next) => {
 }
 
 /**
- * Генерація JWT токена для користувача
+ * Генерація власного JWT токена для користувача
+ *
+ * ВАЖЛИВО: Генерується ВЛАСНИЙ токен, а не токен Auth0!
+ *
+ * Процес:
+ * 1. Користувач входить через Auth0 (OAuth)
+ * 2. Дані користувача зберігаються в MongoDB
+ * 3. Генерується власний JWT токен з issuer/audience нашого сервера
+ * 4. Токен повертається клієнту для API запитів
+ *
+ * Токен містить:
+ * - userId, email, name, auth0Id
+ * - issuer: 'node-products-server'
+ * - audience: 'node-products-api'
+ * - Термін дії з JWT_CONFIG.EXPIRES_IN
+ *
+ * @param {Object} user - Користувач з MongoDB (повинен містити _id, email, auth0Id)
+ * @returns {string} JWT токен
+ * @throws {Error} Якщо user не містить необхідних полів
  */
 export const generateJWT = (user) => {
   // Валідація вхідних даних
