@@ -4,6 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { auth } from 'express-openid-connect'
 import { SERVER_CONFIG } from './config/index.mjs'
+import { TECHNICAL_PATHS } from './config/http.mjs'
 import { getAuth0Config, validateAuthConfig, AUTH0_CONFIG } from './config/auth.mjs'
 import { connectToDatabase, disconnectFromDatabase } from './database/connection.mjs'
 import { ProductModel } from './models/products.mjs'
@@ -108,8 +109,17 @@ app.use(async (req, res, next) => {
   next()
 })
 
+// Middleware для логування HTTP запитів
 app.use((req, res, next) => {
-  logger.info(`${req.method} ${req.url}`)
+  const isTechnicalRequest = TECHNICAL_PATHS.some((path) => req.url.includes(path))
+
+  // Технічні запити логуємо тільки на debug рівні
+  if (!isTechnicalRequest) {
+    logger.info(`${req.method} ${req.url}`)
+  } else {
+    logger.debug(`${req.method} ${req.url} (технічний запит)`)
+  }
+
   next()
 })
 
@@ -154,7 +164,16 @@ app.use((req, res) => {
     return res.status(404).json({ success: false, error: 'API endpoint not found', path: req.originalUrl })
   }
 
-  logger.warn(`Сторінку не знайдено: ${req.originalUrl}`)
+  const isTechnicalRequest = TECHNICAL_PATHS.some((path) => req.originalUrl.includes(path))
+
+  if (isTechnicalRequest) {
+    // Технічні запити логуємо тільки на рівні debug
+    logger.debug(`Технічний запит (404): ${req.originalUrl}`)
+  } else {
+    // Реальні 404 помилки логуємо як попередження
+    logger.warn(`Сторінку не знайдено: ${req.originalUrl}`)
+  }
+
   res.status(404).render('404')
 })
 
