@@ -55,11 +55,23 @@
 - MongoDB підключення
 - Рівні логування
 
-### 🚀 [Deployment](DEPLOYMENT.md)
+### 🚀 Deployment
 
-Керівництво з розгортання в продакшн:
+Керівництва з розгортання в продакшн:
 
-- Environment variables
+#### [Vercel + GitLab](VERCEL.md)
+
+Повна інструкція деплою через GitLab на Vercel:
+
+- Підключення GitLab до Vercel
+- Налаштування Environment Variables
+- Конфігурація Auth0 для production
+- Auto-deploy при push
+- Custom domains
+- Troubleshooting та моніторинг
+
+#### [Загальні інструкції](DEPLOYMENT.md)
+
 - Docker контейнеризація
 - PM2 process manager
 - Nginx reverse proxy
