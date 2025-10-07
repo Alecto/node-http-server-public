@@ -38,6 +38,57 @@ if (AUTH0_CONFIG.ENABLED) {
   logger.warn('Auth0 middleware вимкнено')
 }
 
+// Middleware для автоматичного збереження користувача в БД після Auth0 входу
+app.use(async (req, res, next) => {
+  try {
+    // Перевіряємо чи користувач автентифікований через Auth0
+    if (req.oidc && req.oidc.isAuthenticated && req.oidc.isAuthenticated()) {
+      const auth0User = req.oidc.user
+
+      if (auth0User && auth0User.sub) {
+        // Перевіряємо чи користувач вже в БД
+        const existingUser = await UserModel.findOne({ auth0Id: auth0User.sub })
+
+        if (!existingUser) {
+          // Новий користувач - створюємо запис
+          const providerMatch = auth0User.sub.match(/^([^|]+)\|/)
+          const provider = providerMatch ? providerMatch[1] : 'auth0'
+
+          const newUser = await UserModel.create({
+            auth0Id: auth0User.sub,
+            email: auth0User.email,
+            name: auth0User.name || auth0User.email,
+            picture: auth0User.picture,
+            provider,
+            lastLogin: new Date()
+          })
+
+          logger.info('Новий користувач автоматично створено', {
+            userId: newUser._id,
+            email: newUser.email,
+            auth0Id: newUser.auth0Id
+          })
+        } else {
+          // Оновлюємо lastLogin якщо пройшло більше 5 хвилин
+          const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000)
+          if (!existingUser.lastLogin || existingUser.lastLogin < fiveMinutesAgo) {
+            existingUser.lastLogin = new Date()
+            existingUser.email = auth0User.email
+            existingUser.name = auth0User.name || auth0User.email
+            existingUser.picture = auth0User.picture
+            await existingUser.save()
+            logger.debug('Користувач оновлено', { userId: existingUser._id })
+          }
+        }
+      }
+    }
+  } catch (error) {
+    logger.error('Помилка в middleware збереження користувача:', error)
+  }
+
+  next()
+})
+
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.url}`)
   next()
