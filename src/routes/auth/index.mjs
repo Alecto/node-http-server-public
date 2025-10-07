@@ -1,11 +1,5 @@
 import { Router } from 'express'
-import {
-  handleAuthCallback,
-  showProfile,
-  getCurrentUser,
-  generateAPIToken,
-  getAllUsers
-} from '../../controllers/authController.mjs'
+import { showProfile, getCurrentUser, generateAPIToken, getAllUsers } from '../../controllers/authController.mjs'
 import { requireAuth, verifyJWT, optionalJWT } from '../../middleware/auth.mjs'
 import { AUTH0_CONFIG } from '../../config/auth.mjs'
 
@@ -17,7 +11,7 @@ const router = Router()
  * - GET /auth/logout - вихід з системи
  * - GET /auth/callback - callback після автентифікації
  *
- * Ми додаємо тільки власні обробники для callback
+ * Збереження користувача в БД відбувається через afterCallback hook (див. server.mjs)
  */
 
 // Fallback маршрути, якщо Auth0 вимкнено
@@ -33,11 +27,6 @@ if (!AUTH0_CONFIG.ENABLED) {
   router.get('/callback', (req, res) => {
     res.redirect('/auth/login')
   })
-}
-
-// Callback обробник для збереження користувача в БД (тільки якщо Auth0 увімкнено)
-if (AUTH0_CONFIG.ENABLED) {
-  router.get('/callback', handleAuthCallback)
 }
 
 // Профіль користувача (веб-сторінка)
