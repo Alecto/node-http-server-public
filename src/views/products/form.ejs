@@ -2,16 +2,16 @@
 <html lang='uk'>
 
 <head>
-  <%- include('head') %>
+  <%- include('../partials/head') %>
     <title>
       <%= isEdit ? 'Редагувати продукт' : 'Додати продукт' %> - Express HTTP Server
     </title>
-    <%- include('styles') %>
+    <%- include('../partials/styles') %>
 </head>
 
 <body>
   <div class='container'>
-    <%- include('navigation') %>
+    <%- include('../partials/navigation') %>
 
       <h1>
         <%= isEdit ? 'Редагувати продукт' : 'Додати новий продукт' %>

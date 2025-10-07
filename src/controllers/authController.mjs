@@ -111,10 +111,10 @@ export const showProfile = async (req, res, next) => {
 
     if (!user) {
       logger.error('Користувач не знайдений в БД', { auth0Id: auth0User.sub })
-      return res.status(404).render('404')
+      return res.status(404).render('errors/404')
     }
 
-    res.render('profile', { user: user.toJSON() })
+    res.render('auth/profile', { user: user.toJSON() })
   } catch (error) {
     logger.error('Помилка в showProfile:', error)
     next(error)

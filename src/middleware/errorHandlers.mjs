@@ -23,7 +23,7 @@ export const expressErrorHandler = (err, req, res, next) => {
       })
     }
 
-    return res.status(409).render('500', { error: message })
+    return res.status(409).render('errors/500', { error: message })
   }
 
   // Обробка Mongoose validation error
@@ -38,7 +38,7 @@ export const expressErrorHandler = (err, req, res, next) => {
       })
     }
 
-    return res.status(400).render('500', { error: errorMessage })
+    return res.status(400).render('errors/500', { error: errorMessage })
   }
 
   // Обробка Mongoose CastError (невалідні типи даних)
@@ -52,7 +52,7 @@ export const expressErrorHandler = (err, req, res, next) => {
       })
     }
 
-    return res.status(400).render('500', { error: message })
+    return res.status(400).render('errors/500', { error: message })
   }
 
   // Визначаємо тип відповіді на основі Accept header або Content-Type запиту
@@ -67,7 +67,7 @@ export const expressErrorHandler = (err, req, res, next) => {
   } else {
     // HTML відповідь для веб-інтерфейсу
     try {
-      res.status(500).render('500', {
+      res.status(500).render('errors/500', {
         error: 'Внутрішня помилка сервера'
       })
     } catch (renderError) {

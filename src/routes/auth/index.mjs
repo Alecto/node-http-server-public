@@ -17,7 +17,7 @@ const router = Router()
 // Fallback маршрути, якщо Auth0 вимкнено
 if (!AUTH0_CONFIG.ENABLED) {
   router.get('/login', (req, res) => {
-    res.status(503).render('auth-disabled')
+    res.status(503).render('auth/disabled')
   })
 
   router.get('/logout', (req, res) => {

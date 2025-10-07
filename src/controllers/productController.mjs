@@ -97,7 +97,7 @@ export const getProducts = async (req, res, next) => {
     const products = await ProductModel.find().sort({ createdAt: -1 }).lean({ virtuals: true })
     const total = await ProductModel.countDocuments()
     logger.debug('getProducts.view', { returned: products.length, total })
-    res.render('products', { products, total })
+    res.render('products/list', { products, total })
   } catch (error) {
     next(error)
   }
@@ -108,17 +108,17 @@ export const getProduct = async (req, res, next) => {
     const product = await ProductModel.findById(req.params.id)
 
     if (!product) {
-      return res.status(404).render('404')
+      return res.status(404).render('errors/404')
     }
 
-    res.render('product-detail', { product })
+    res.render('products/detail', { product })
   } catch (error) {
     next(error)
   }
 }
 
 export const getNewProductForm = (req, res) => {
-  res.render('product-form', { product: {}, isEdit: false })
+  res.render('products/form', { product: {}, isEdit: false })
 }
 
 export const getEditProductForm = async (req, res, next) => {
@@ -126,10 +126,10 @@ export const getEditProductForm = async (req, res, next) => {
     const product = await ProductModel.findById(req.params.id)
 
     if (!product) {
-      return res.status(404).render('404')
+      return res.status(404).render('errors/404')
     }
 
-    res.render('product-form', { product, isEdit: true })
+    res.render('products/form', { product, isEdit: true })
   } catch (error) {
     next(error)
   }
@@ -167,7 +167,7 @@ export const updateProductHandler = async (req, res, next) => {
     )
 
     if (!product) {
-      return res.status(404).render('404')
+      return res.status(404).render('errors/404')
     }
 
     res.redirect('/products')
@@ -186,7 +186,7 @@ export const deleteProductHandler = async (req, res, next) => {
     const product = await ProductModel.findByIdAndDelete(req.params.id)
 
     if (!product) {
-      return res.status(404).render('404')
+      return res.status(404).render('errors/404')
     }
 
     res.redirect('/products')
