@@ -11,3 +11,6 @@ build/
 *.log
 *.js.map
 *.d.ts
+
+# Environment variables
+.env
