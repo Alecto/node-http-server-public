@@ -2,6 +2,12 @@
  ? Головний файл для запуску сервера
 */
 
-import { startServer } from './src/server.mjs'
+import { app, startServer } from './src/server.mjs'
 
-startServer()
+// Для локального запуску
+if (process.env.VERCEL !== '1') {
+  startServer()
+}
+
+// Для Vercel serverless
+export default app
