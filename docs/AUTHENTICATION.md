@@ -337,17 +337,53 @@ curl -X GET http://localhost:3000/auth/api/me \
 5. **Rate limiting** - обмежте кількість запитів
 6. **Валідація даних** - завжди валідуйте вхідні дані
 
+### Реалізовані заходи безпеки
+
+✅ **JWT токени з строгою валідацією:**
+
+- Перевірка `issuer` та `audience`
+- Валідація обов'язкових полів (`userId`, `email`)
+- Максимальна довжина токена (2048 символів)
+- Clock tolerance для синхронізації часу
+
+✅ **Захист сесій:**
+
+- `express-openid-connect` автоматично налаштовує безпечні cookies
+- `httpOnly: true` (недоступні через JavaScript)
+- `sameSite: 'Lax'` (захист від CSRF атак)
+- `secure: true` для HTTPS в продакшні (автоматично)
+
+✅ **Валідація конфігурації:**
+
+- Перевірка довжини секретів (мінімум 32 символи)
+- Обов'язковий HTTPS в продакшні
+- Попередження про дефолтні значення
+
+✅ **Захист від атак:**
+
+- Bearer token regex валідація
+- Обмеження довжини токенів
+- Безпечне логування (без токенів)
+
 ### Змінні для продакшну
 
 ```ini
 # Продакшн URL (HTTPS!)
 AUTH0_BASE_URL=https://your-domain.com
 
-# Термін дії токенів
+# Термін дії токенів (короткий для безпеки)
 JWT_EXPIRES_IN=1h
 
-# Термін дії session
+# Термін дії session (1 година)
 SESSION_MAX_AGE=3600000
+
+# Сильні секрети (генеруйте нові!)
+AUTH0_SECRET=your_strong_32_char_secret_here
+JWT_SECRET=another_strong_32_char_secret
+SESSION_SECRET=session_strong_32_char_secret
+
+# Середовище
+NODE_ENV=production
 ```
 
 ---
