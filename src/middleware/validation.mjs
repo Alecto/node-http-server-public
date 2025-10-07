@@ -86,7 +86,7 @@ const handleInvalidObjectIdResponse = (req, res) => {
     return res.status(400).json({ success: false, error: 'Некоректний ідентифікатор ресурсу' })
   }
 
-  return res.status(404).render('404')
+  return res.status(404).render('errors/404')
 }
 
 export const validateObjectIdParam =

@@ -2,14 +2,14 @@
 <html lang='uk'>
 
 <head>
-  <%- include('head') %>
+  <%- include('../partials/head') %>
     <title>Каталог продуктів - Express HTTP Server</title>
-    <%- include('styles') %>
+    <%- include('../partials/styles') %>
 </head>
 
 <body>
   <div class='container'>
-    <%- include('navigation') %>
+    <%- include('../partials/navigation') %>
 
       <h1>Каталог продуктів</h1>
 
@@ -58,7 +58,7 @@
                       <% } %>
         </div>
 
-        <%- include('auth-sidebar') %>
+        <%- include('../partials/auth-sidebar') %>
       </div>
   </div>
 </body>

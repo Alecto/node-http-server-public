@@ -174,7 +174,7 @@ app.use((req, res) => {
     logger.warn(`Сторінку не знайдено: ${req.originalUrl}`)
   }
 
-  res.status(404).render('404')
+  res.status(404).render('errors/404')
 })
 
 app.use(expressErrorHandler)
