@@ -16,3 +16,6 @@ build/
 .env
 .env*
 .vercel
+
+# Personal notes (not for repo)
+GIT-COMMANDS.md
