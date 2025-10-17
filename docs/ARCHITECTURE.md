@@ -144,11 +144,30 @@ HTTP Request → Express Router → Controller → Mongoose Model → MongoDB At
 - Connection pooling зберігається між запитами в межах "теплого" контейнера
 - Environment variable `VERCEL=1` автоматично встановлюється Vercel
 
+**Технічні оптимізації:**
+
+1. **Підключення (`src/database/connection.mjs`)**:
+
+   - Параметр `isServerless: true` активує serverless режим
+   - Збільшені timeout: `serverSelectionTimeoutMS: 15000`, `connectTimeoutMS: 15000`
+   - Менший connection pool: `maxPoolSize: 5` (замість 10-20)
+   - Перевірка стану підключення (readyState: 0=disconnected, 1=connected, 2=connecting, 3=disconnecting)
+   - Очікування завершення підключення якщо `readyState === 2`
+
+2. **Ініціалізація (`src/server.mjs`)**:
+   - М'яка валідація стану MongoDB (warning замість error)
+   - Автоматична спроба повторного підключення
+   - Синхронізація індексів тільки при успішному підключенні
+   - Middleware перевіряє `isInitialized` перед роботою з БД
+   - Auth0 працює незалежно від стану MongoDB
+
 **Переваги для serverless:**
 
 - ✅ Швидший холодний старт (ініціалізація відкладена до першого запиту)
 - ✅ Стабільність при тимчасових проблемах з MongoDB
 - ✅ Graceful degradation (помилки не падають весь застосунок)
+- ✅ Відсутність false-positive помилок у production логах
+- ✅ Автоматична адаптація до стану підключення
 
 Докладніший опис процесу перенесення з мокованих даних у MongoDB див. в `docs/MIGRATION.md`.
 Інструкція по deploy на Vercel — `docs/VERCEL.md`.
