@@ -20,6 +20,9 @@ const __dirname = path.dirname(__filename)
 
 export const app = express()
 
+let serverInstance = null
+let isInitialized = false
+
 setupGlobalErrorHandlers()
 
 app.set('view engine', 'ejs')
@@ -54,6 +57,12 @@ if (AUTH0_CONFIG.ENABLED) {
 // Middleware для автоматичного збереження користувача в БД після Auth0 входу
 app.use(async (req, res, next) => {
   try {
+    // Перевіряємо чи MongoDB підключена
+    if (!isInitialized) {
+      logger.debug('Пропускаємо збереження користувача - система ще не ініціалізована')
+      return next()
+    }
+
     // Перевіряємо чи користувач автентифікований через Auth0
     if (req.oidc && req.oidc.isAuthenticated && req.oidc.isAuthenticated()) {
       const auth0User = req.oidc.user
@@ -116,6 +125,7 @@ app.use(async (req, res, next) => {
     }
   } catch (error) {
     logger.error('Помилка в middleware збереження користувача:', error)
+    // Не блокуємо запит через помилку БД
   }
 
   next()
@@ -140,19 +150,27 @@ app.use(async (req, res, next) => {
   try {
     if (req.oidc && req.oidc.isAuthenticated && req.oidc.isAuthenticated()) {
       const auth0User = req.oidc.user
-      // Отримуємо користувача з MongoDB для повної інформації (включно з picture)
-      const dbUser = await UserModel.findOne({ auth0Id: auth0User.sub }).lean()
 
-      if (dbUser) {
-        res.locals.user = dbUser
-        res.locals.isAuthenticated = true
+      // Намагаємося отримати користувача з MongoDB (якщо система ініціалізована)
+      if (isInitialized) {
+        const dbUser = await UserModel.findOne({ auth0Id: auth0User.sub }).lean()
+
+        if (dbUser) {
+          res.locals.user = dbUser
+          res.locals.isAuthenticated = true
+        } else {
+          // Якщо користувач ще не в БД, використовуємо дані Auth0
+          res.locals.user = auth0User
+          res.locals.isAuthenticated = true
+          logger.debug('Користувач не знайдений в БД, використовуємо Auth0 дані', {
+            auth0Id: auth0User.sub
+          })
+        }
       } else {
-        // Якщо користувач ще не в БД, використовуємо дані Auth0
+        // Якщо система не ініціалізована, використовуємо тільки Auth0 дані
         res.locals.user = auth0User
         res.locals.isAuthenticated = true
-        logger.warn('Користувач не знайдений в БД, використовуємо Auth0 дані', {
-          auth0Id: auth0User.sub
-        })
+        logger.debug('Використовуємо Auth0 дані (система ініціалізується)')
       }
     } else {
       res.locals.user = null
@@ -191,19 +209,32 @@ app.use((req, res) => {
 
 app.use(expressErrorHandler)
 
-let serverInstance = null
-let isInitialized = false
-
 // Функція ініціалізації для Vercel (без запуску HTTP сервера)
 export const initializeForVercel = async () => {
   if (isInitialized) return
 
   try {
-    // Підключаємося до MongoDB
-    const { connection } = await connectToDatabase()
+    // Підключаємося до MongoDB з опцією serverless
+    const { connection } = await connectToDatabase({ isServerless: true })
 
-    if (!connection || connection.readyState !== 1) {
-      throw new Error('Не вдалося встановити підключення до MongoDB')
+    // М'яка перевірка стану підключення
+    // readyState: 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+    if (!connection) {
+      logger.warn('MongoDB connection object відсутній, пропускаємо ініціалізацію')
+      return
+    }
+
+    if (connection.readyState === 0 || connection.readyState === 3) {
+      logger.warn(`MongoDB не підключено (readyState: ${connection.readyState}), спроба повторного підключення...`)
+      // Спробуємо ще раз
+      await connectToDatabase({ isServerless: true })
+    }
+
+    // Перевіряємо фінальний стан
+    if (connection.readyState !== 1) {
+      logger.warn(`MongoDB підключення в стані ${connection.readyState}, але продовжуємо ініціалізацію`)
+    } else {
+      logger.info('MongoDB успішно підключено для Vercel')
     }
 
     // Валідація Auth0 конфігурації (тільки попередження, не блокуємо)
@@ -215,15 +246,23 @@ export const initializeForVercel = async () => {
       authValidation.warnings.forEach((warning) => logger.warn(`Auth0: ${warning}`))
     }
 
-    // Синхронізація індексів для моделей
-    await ProductModel.syncIndexes()
-    await UserModel.syncIndexes()
-    logger.info('MongoDB індекси синхронізовано для Vercel')
+    // Синхронізація індексів для моделей (тільки якщо підключені)
+    if (connection.readyState === 1) {
+      try {
+        await ProductModel.syncIndexes()
+        await UserModel.syncIndexes()
+        logger.info('MongoDB індекси синхронізовано для Vercel')
+      } catch (syncError) {
+        logger.warn('Не вдалося синхронізувати індекси:', syncError.message)
+      }
+    }
 
     isInitialized = true
   } catch (error) {
-    logger.error('Помилка ініціалізації для Vercel:', error)
+    logger.error('Помилка ініціалізації для Vercel:', error.message)
     // Не кидаємо помилку, щоб Vercel міг відповісти хоча б помилкою
+    // Але позначаємо як ініціалізовано, щоб не повторювати спробу кожного разу
+    isInitialized = true
   }
 }
 

@@ -30,20 +30,46 @@ export const connectToDatabase = async ({
   uri,
   dbName,
   autoIndex = DATABASE_CONFIG.AUTO_INDEX,
-  maxPoolSize = DATABASE_CONFIG.MAX_POOL_SIZE
+  maxPoolSize = DATABASE_CONFIG.MAX_POOL_SIZE,
+  isServerless = false
 } = {}) => {
   bindConnectionEvents()
 
   const connectionString = buildMongoConnectionString(uri, dbName)
 
+  // Якщо вже підключені або підключаємося
+  if (mongoose.connection.readyState === 1 || mongoose.connection.readyState === 2) {
+    // Чекаємо поки підключення встановиться (для serverless)
+    if (mongoose.connection.readyState === 2 && isServerless) {
+      await new Promise((resolve) => {
+        const checkConnection = setInterval(() => {
+          if (mongoose.connection.readyState === 1) {
+            clearInterval(checkConnection)
+            resolve()
+          }
+        }, 100)
+        //Timeout через 5 секунд
+        setTimeout(() => {
+          clearInterval(checkConnection)
+          resolve()
+        }, 5000)
+      })
+    }
+    return { connection: mongoose.connection }
+  }
+
+  // Підключаємося якщо ще не підключені
   if (mongoose.connection.readyState === 0) {
     const connectOptions = {
       autoIndex,
-      serverSelectionTimeoutMS: 10000
+      // Більший timeout для serverless
+      serverSelectionTimeoutMS: isServerless ? 15000 : 10000,
+      connectTimeoutMS: isServerless ? 15000 : 10000
     }
 
     if (typeof maxPoolSize === 'number') {
-      connectOptions.maxPoolSize = maxPoolSize
+      // Менший pool для serverless
+      connectOptions.maxPoolSize = isServerless ? Math.min(maxPoolSize, 5) : maxPoolSize
     }
 
     await mongoose.connect(connectionString, connectOptions)
