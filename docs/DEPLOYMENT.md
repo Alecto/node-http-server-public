@@ -1,6 +1,35 @@
 # 🚀 Deployment Guide
 
-## Production Deployment
+## Serverless Deployment (Рекомендовано)
+
+### Vercel
+
+Найпростіший спосіб задеплоїти Node.js застосунок з MongoDB та Auth0:
+
+**📖 Повна інструкція:** [VERCEL.md](VERCEL.md)
+
+```bash
+# 1. Встановіть Vercel CLI
+yarn global add vercel
+
+# 2. Залогіньтесь
+vercel login
+
+# 3. Задеплойте
+vercel --prod
+```
+
+**Особливості:**
+
+- ✅ Автоматична lazy initialization для MongoDB
+- ✅ Безкоштовний план для навчання
+- ✅ Автоматичний deploy при push
+- ✅ HTTPS out of the box
+- ✅ Глобальний CDN
+
+---
+
+## Production Deployment (Традиційний сервер)
 
 ### Environment Variables
 

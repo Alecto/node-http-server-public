@@ -128,8 +128,27 @@ HTTP Request → Express Router → Controller → Mongoose Model → MongoDB At
 
 ## Deployment Considerations
 
+### Традиційний сервер (Railway, Render, VPS)
+
 - Індекси синхронізуються при старті (`ProductModel.syncIndexes()`)
 - Можна контролювати `autoIndex` через `MONGOOSE_AUTO_INDEX`
 - `maxPoolSize` читається з env (`MONGOOSE_MAX_POOL_SIZE`) — для Atlas рекомендується налаштовувати відповідно до тарифу
+- Підключення до MongoDB встановлюється один раз при запуску через `startServer()`
+
+### Serverless (Vercel, AWS Lambda)
+
+- Використовується **lazy initialization** стратегія
+- MongoDB підключається при першому HTTP запиті через middleware
+- Middleware в `src/server.mjs` автоматично викликає `initializeForVercel()`
+- Синхронізація індексів відбувається при ініціалізації
+- Connection pooling зберігається між запитами в межах "теплого" контейнера
+- Environment variable `VERCEL=1` автоматично встановлюється Vercel
+
+**Переваги для serverless:**
+
+- ✅ Швидший холодний старт (ініціалізація відкладена до першого запиту)
+- ✅ Стабільність при тимчасових проблемах з MongoDB
+- ✅ Graceful degradation (помилки не падають весь застосунок)
 
 Докладніший опис процесу перенесення з мокованих даних у MongoDB див. в `docs/MIGRATION.md`.
+Інструкція по deploy на Vercel — `docs/VERCEL.md`.
