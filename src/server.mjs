@@ -30,6 +30,18 @@ app.use(express.json())
 app.use(methodOverride('_method'))
 app.use(express.static(path.join(__dirname, 'public')))
 
+// Middleware для lazy initialization на Vercel
+app.use(async (req, res, next) => {
+  if (process.env.VERCEL === '1' && !isInitialized) {
+    try {
+      await initializeForVercel()
+    } catch (error) {
+      logger.error('Не вдалося ініціалізувати застосунок на Vercel:', error)
+    }
+  }
+  next()
+})
+
 // Auth0 middleware (якщо увімкнено)
 if (AUTH0_CONFIG.ENABLED) {
   const authConfig = getAuth0Config()
@@ -180,6 +192,40 @@ app.use((req, res) => {
 app.use(expressErrorHandler)
 
 let serverInstance = null
+let isInitialized = false
+
+// Функція ініціалізації для Vercel (без запуску HTTP сервера)
+export const initializeForVercel = async () => {
+  if (isInitialized) return
+
+  try {
+    // Підключаємося до MongoDB
+    const { connection } = await connectToDatabase()
+
+    if (!connection || connection.readyState !== 1) {
+      throw new Error('Не вдалося встановити підключення до MongoDB')
+    }
+
+    // Валідація Auth0 конфігурації (тільки попередження, не блокуємо)
+    const authValidation = validateAuthConfig()
+    if (!authValidation.valid) {
+      logger.warn('Попередження конфігурації Auth0:', authValidation.errors)
+    }
+    if (authValidation.warnings?.length > 0) {
+      authValidation.warnings.forEach((warning) => logger.warn(`Auth0: ${warning}`))
+    }
+
+    // Синхронізація індексів для моделей
+    await ProductModel.syncIndexes()
+    await UserModel.syncIndexes()
+    logger.info('MongoDB індекси синхронізовано для Vercel')
+
+    isInitialized = true
+  } catch (error) {
+    logger.error('Помилка ініціалізації для Vercel:', error)
+    // Не кидаємо помилку, щоб Vercel міг відповісти хоча б помилкою
+  }
+}
 
 export const startServer = async (options = {}) => {
   const { connection } = await connectToDatabase(options)
@@ -209,6 +255,7 @@ export const startServer = async (options = {}) => {
     })
   }
 
+  isInitialized = true
   return { server: serverInstance, connection }
 }
 

@@ -9,5 +9,6 @@ if (process.env.VERCEL !== '1') {
   startServer()
 }
 
-// Для Vercel serverless
+// Для Vercel serverless - експортуємо app
+// Ініціалізація відбувається автоматично через middleware при першому запиті
 export default app
